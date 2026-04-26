@@ -16,6 +16,7 @@ const tickMs = 130;
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const score = ref(0);
 const gameOver = ref(false);
+const hasStarted = ref(false);
 
 const snake = ref<Position[]>([]);
 const food = ref<Position>({ x: 0, y: 0 });
@@ -75,6 +76,7 @@ function resetGame(): void {
   pendingDirection.value = "right";
   score.value = 0;
   gameOver.value = false;
+  hasStarted.value = false;
   spawnFood();
   draw();
 }
@@ -101,7 +103,7 @@ function startLoop(): void {
 }
 
 function tick(): void {
-  if (gameOver.value) return;
+  if (gameOver.value || !hasStarted.value) return;
 
   if (!isOpposite(pendingDirection.value, direction.value)) {
     direction.value = pendingDirection.value;
@@ -208,17 +210,24 @@ function draw(): void {
     );
   });
 
-  if (gameOver.value) {
+  if (gameOver.value || !hasStarted.value) {
     ctx.fillStyle = "rgba(2, 6, 23, 0.72)";
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
     ctx.fillStyle = "#f8fafc";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = "bold 34px Segoe UI";
-    ctx.fillText("Game Over", canvasWidth / 2, canvasHeight / 2 - 20);
-    ctx.font = "16px Segoe UI";
-    ctx.fillText("Drücke beliebige Pfeiltaste für Neustart", canvasWidth / 2, canvasHeight / 2 + 18);
+    if (gameOver.value) {
+      ctx.font = "bold 34px Segoe UI";
+      ctx.fillText("Game Over", canvasWidth / 2, canvasHeight / 2 - 20);
+      ctx.font = "16px Segoe UI";
+      ctx.fillText("Drücke eine Pfeiltaste für Neustart", canvasWidth / 2, canvasHeight / 2 + 18);
+    } else {
+      ctx.font = "bold 30px Segoe UI";
+      ctx.fillText("Snake", canvasWidth / 2, canvasHeight / 2 - 20);
+      ctx.font = "16px Segoe UI";
+      ctx.fillText("Drücke eine Pfeiltaste zum Start", canvasWidth / 2, canvasHeight / 2 + 18);
+    }
   }
 }
 
@@ -227,36 +236,50 @@ function onResize(): void {
 }
 
 function onKeyDown(event: KeyboardEvent): void {
+  let nextDirection: Direction | null = null;
+
   switch (event.key) {
     case "ArrowUp":
-      event.preventDefault();
-      pendingDirection.value = "up";
+      nextDirection = "up";
       break;
     case "ArrowDown":
-      event.preventDefault();
-      pendingDirection.value = "down";
+      nextDirection = "down";
       break;
     case "ArrowLeft":
-      event.preventDefault();
-      pendingDirection.value = "left";
+      nextDirection = "left";
       break;
     case "ArrowRight":
-      event.preventDefault();
-      pendingDirection.value = "right";
-      break;
-    case "Enter":
-      if (gameOver.value) {
-        event.preventDefault();
-        resetGame();
-        startLoop();
-      }
+      nextDirection = "right";
       break;
   }
+
+  if (!nextDirection) {
+    return;
+  }
+
+  event.preventDefault();
+
+  if (!hasStarted.value || gameOver.value) {
+    if (gameOver.value) {
+      resetGame();
+    }
+
+    hasStarted.value = true;
+
+    if (!isOpposite(nextDirection, direction.value)) {
+      direction.value = nextDirection;
+    }
+    pendingDirection.value = nextDirection;
+    startLoop();
+    draw();
+    return;
+  }
+
+  pendingDirection.value = nextDirection;
 }
 
 onMounted(() => {
   resetGame();
-  startLoop();
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("resize", onResize);
 });
