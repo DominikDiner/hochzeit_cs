@@ -594,8 +594,8 @@ function draw(): void {
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
     if (hasWon.value) {
-      const titleLines = ["Ihr habt gewonnen!"];
-      const codeLines = ["Der restliche Code", "ist XYZ"];
+      const titleLines = ["Super Teamwork!"];
+      const codeLines = ["Der zweite Teil", "vom Code ist XYZ"];
       const titleMaxWidth = canvasWidth * 0.9;
       const codeMaxWidth = canvasWidth * 0.9;
       const titleFontSize = Math.min(
