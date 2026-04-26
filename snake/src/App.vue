@@ -792,7 +792,7 @@ onUnmounted(() => {
 
         <div class="score-value-row">
           <p class="score-value">{{ score }}</p>
-          <p class="score-target">von {{ winScore }}</p>
+          <p class="score-target">&nbsp;von {{ winScore }}</p>
         </div>
       </div>
 
