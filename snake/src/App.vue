@@ -1059,7 +1059,7 @@ onUnmounted(() => {
 }
 
 .direction-icon {
-  filter: drop-shadow(1px 0 0 #0f172a) drop-shadow(-1px 0 0 #0f172a) drop-shadow(0 1px 0 #0f172a) drop-shadow(0 -1px 0 #0f172a) drop-shadow(1px 1px 0 #0f172a) drop-shadow(-1px -1px 0 #0f172a) drop-shadow(-1px 1px 0 #0f172a) drop-shadow(1px -1px 0 #0f172a);
+  filter: drop-shadow(1px 0 0 #0f172a) drop-shadow(-1px 0 0 #0f172a) drop-shadow(0 1px 0 #0f172a) drop-shadow(0 -1px 0 #0f172a);
 }
 
 .pixel-portrait {
