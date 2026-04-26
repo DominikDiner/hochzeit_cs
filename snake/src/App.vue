@@ -44,12 +44,18 @@ function containsPosition(positions: Position[], position: Position): boolean {
 }
 
 function spawnFood(): void {
+  if (columns < 3 || rows < 3) {
+    // Fallback fuer ungueltige Spielfeldgroessen ohne Innenbereich.
+    food.value = { x: 0, y: 0 };
+    return;
+  }
+
   let nextFood: Position;
 
   do {
     nextFood = {
-      x: randomInt(columns),
-      y: randomInt(rows)
+      x: randomInt(columns - 2) + 1,
+      y: randomInt(rows - 2) + 1
     };
   } while (containsPosition(snake.value, nextFood));
 
