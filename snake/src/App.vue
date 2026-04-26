@@ -40,16 +40,16 @@ const appleViewBoxSize = 24;
 const appleBodyPathData = "M12 7.4C9.3 4 4.5 4.8 4 10c-.5 5 3 9.7 8 9.7s8.5-4.7 8-9.7c-.5-5.2-5.3-6-8-2.6Z";
 const appleStemPathData = "M12 7.3c-.1-2.1.7-3.8 2.2-5";
 const appleLeafPathData = "M12.8 4.4c1.4-1.1 2.9-1.4 4.6-.8-1 1.5-2.6 2.1-4.6.8Z";
-const colorBoardBg = "#1e293b";
-const colorGrid = "#64748b";
+const colorBoardBg = "#e2e8f0";
+const colorGrid = "#94a3b8";
 const colorSnakeBody = "#16a34a";
 const colorSnakeHighlight = "#86efac";
 const colorFoodBody = "#ff4d6d";
 const colorFoodStem = "#6b3f1d";
 const colorFoodLeaf = "#34d399";
-const colorOverlayBg = "rgba(15, 23, 42, 0.8)";
-const colorOverlayText = "#ffffff";
-const colorOverlayTextOutline = "#020617";
+const colorOverlayBg = "rgba(248, 250, 252, 0.84)";
+const colorOverlayText = "#0f172a";
+const colorOverlayTextOutline = "#cbd5e1";
 const musicNotes = [261.63, 329.63, 392.0, 349.23, 329.63, 293.66, 329.63, 392.0];
 const loseMusicNotes = [293.66, 261.63, 220.0, 196.0, 174.61, 196.0];
 const winMusicNotes = [523.25, 659.25, 783.99, 1046.5, 783.99, 1318.51, 1046.5, 783.99];
@@ -911,8 +911,8 @@ onUnmounted(() => {
   padding: 1.5rem;
   box-sizing: border-box;
   overflow: hidden;
-  background: radial-gradient(circle at top, #334155, #0f172a 72%);
-  color: #f8fafc;
+  background: radial-gradient(circle at top, #f8fafc, #dbeafe 72%);
+  color: #0f172a;
 }
 
 .board-area {
@@ -964,7 +964,7 @@ onUnmounted(() => {
   font-size: 1.2rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: #dbeafe;
+  color: #334155;
 }
 
 .last-direction-content {
@@ -1017,7 +1017,7 @@ onUnmounted(() => {
   margin: 0;
   font-size: 3rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: #0f172a;
 }
 
 .score-label {
@@ -1026,7 +1026,7 @@ onUnmounted(() => {
   font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  color: #dbeafe;
+  color: #334155;
 }
 
 .hud-icon {
@@ -1050,7 +1050,7 @@ onUnmounted(() => {
   font-size: var(--counter-size);
   line-height: 0.95;
   font-weight: 800;
-  color: #f8fafc;
+  color: #0f172a;
 }
 
 .score-value-row {
@@ -1065,7 +1065,7 @@ onUnmounted(() => {
   font-size: calc(var(--counter-size) * 0.28);
   font-weight: 700;
   line-height: 1;
-  color: #dbeafe;
+  color: #334155;
   text-transform: uppercase;
 }
 
