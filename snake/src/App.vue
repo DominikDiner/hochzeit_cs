@@ -343,6 +343,36 @@ function drawSnake(ctx: CanvasRenderingContext2D): void {
   ctx.restore();
 }
 
+function getFittedFontSize(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+  fontWeight: string,
+  maxSize: number,
+  minSize: number
+): number {
+  for (let size = maxSize; size >= minSize; size -= 1) {
+    ctx.font = `${fontWeight} ${size}px Segoe UI`;
+    if (ctx.measureText(text).width <= maxWidth) {
+      return size;
+    }
+  }
+
+  return minSize;
+}
+
+function drawCenteredTextLines(
+  ctx: CanvasRenderingContext2D,
+  lines: string[],
+  centerX: number,
+  startY: number,
+  lineHeight: number
+): void {
+  lines.forEach((line, index) => {
+    ctx.fillText(line, centerX, startY + index * lineHeight);
+  });
+}
+
 function syncCanvasResolution(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D): void {
   const dpr = window.devicePixelRatio || 1;
   const displayWidth = Math.max(1, Math.round(canvas.clientWidth));
@@ -383,17 +413,46 @@ function draw(): void {
 
     ctx.fillStyle = "#f8fafc";
     ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+    ctx.textBaseline = "top";
     if (gameOver.value) {
-      ctx.font = "bold 34px Segoe UI";
-      ctx.fillText("Game Over", canvasWidth / 2, canvasHeight / 2 - 20);
-      ctx.font = "16px Segoe UI";
-      ctx.fillText("Drücke eine Pfeiltaste für Neustart", canvasWidth / 2, canvasHeight / 2 + 18);
+      const titleLines = ["GAME", "OVER"];
+      const hintLines = ["Drücke eine Pfeiltaste", "zum Starten"];
+      const titleMaxWidth = canvasWidth * 0.9;
+      const hintMaxWidth = canvasWidth * 0.84;
+      const titleFontSize = Math.min(
+        ...titleLines.map((line) => getFittedFontSize(ctx, line, titleMaxWidth, "800", 116, 52))
+      );
+      const hintFontSize = Math.min(
+        ...hintLines.map((line) => getFittedFontSize(ctx, line, hintMaxWidth, "600", 28, 18))
+      );
+      const titleLineHeight = titleFontSize * 0.88;
+      const hintLineHeight = hintFontSize * 1.05;
+      const blockHeight = titleLineHeight * titleLines.length + 22 + hintLineHeight * hintLines.length;
+      const blockStartY = (canvasHeight - blockHeight) / 2;
+
+      ctx.font = `800 ${titleFontSize}px Segoe UI`;
+      drawCenteredTextLines(ctx, titleLines, canvasWidth / 2, blockStartY, titleLineHeight);
+
+      ctx.font = `600 ${hintFontSize}px Segoe UI`;
+      drawCenteredTextLines(
+        ctx,
+        hintLines,
+        canvasWidth / 2,
+        blockStartY + titleLineHeight * titleLines.length + 22,
+        hintLineHeight
+      );
     } else {
       ctx.font = "bold 30px Segoe UI";
-      ctx.fillText("Snake", canvasWidth / 2, canvasHeight / 2 - 20);
-      ctx.font = "16px Segoe UI";
-      ctx.fillText("Drücke eine Pfeiltaste zum Start", canvasWidth / 2, canvasHeight / 2 + 18);
+
+      const hintLines = ["Drücke eine Pfeiltaste", "zum Starten"];
+      const hintMaxWidth = canvasWidth * 0.82;
+      const hintFontSize = Math.min(
+        ...hintLines.map((line) => getFittedFontSize(ctx, line, hintMaxWidth, "500", 24, 16))
+      );
+      const hintLineHeight = hintFontSize * 1.05;
+
+      ctx.font = `500 ${hintFontSize}px Segoe UI`;
+      drawCenteredTextLines(ctx, hintLines, canvasWidth / 2, canvasHeight / 2 + 8, hintLineHeight);
     }
   }
 }
