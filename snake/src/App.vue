@@ -27,6 +27,10 @@ const intervalId = ref<number | null>(null);
 
 const canvasWidth = columns * tileSize;
 const canvasHeight = rows * tileSize;
+const appleViewBoxSize = 24;
+const appleBodyPathData = "M12 7.4C9.3 4 4.5 4.8 4 10c-.5 5 3 9.7 8 9.7s8.5-4.7 8-9.7c-.5-5.2-5.3-6-8-2.6Z";
+const appleStemPathData = "M12 7.3c-.1-2.1.7-3.8 2.2-5";
+const appleLeafPathData = "M12.8 4.4c1.4-1.1 2.9-1.4 4.6-.8-1 1.5-2.6 2.1-4.6.8Z";
 
 function randomInt(maxExclusive: number): number {
   return Math.floor(Math.random() * maxExclusive);
@@ -166,6 +170,35 @@ function drawGrid(ctx: CanvasRenderingContext2D): void {
     ctx.lineTo(canvasWidth, py);
     ctx.stroke();
   }
+}
+
+function drawFood(ctx: CanvasRenderingContext2D, position: Position): void {
+  const baseX = position.x * tileSize;
+  const baseY = position.y * tileSize;
+  const appleSize = tileSize - 2;
+  const offset = (tileSize - appleSize) / 2;
+  const scale = appleSize / appleViewBoxSize;
+
+  const appleBodyPath = new Path2D(appleBodyPathData);
+  const appleStemPath = new Path2D(appleStemPathData);
+  const appleLeafPath = new Path2D(appleLeafPathData);
+
+  ctx.save();
+  ctx.translate(baseX + offset, baseY + offset);
+  ctx.scale(scale, scale);
+
+  ctx.fillStyle = "#dc2626";
+  ctx.fill(appleBodyPath);
+
+  ctx.strokeStyle = "#7c2d12";
+  ctx.lineWidth = 1.6;
+  ctx.lineCap = "round";
+  ctx.stroke(appleStemPath);
+
+  ctx.fillStyle = "#22c55e";
+  ctx.fill(appleLeafPath);
+
+  ctx.restore();
 }
 
 function getDirectionVector(currentDirection: Direction): Position {
@@ -340,8 +373,7 @@ function draw(): void {
 
   drawGrid(ctx);
 
-  ctx.fillStyle = "#f43f5e";
-  ctx.fillRect(food.value.x * tileSize, food.value.y * tileSize, tileSize, tileSize);
+  drawFood(ctx, food.value);
 
   drawSnake(ctx);
 
