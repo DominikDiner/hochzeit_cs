@@ -218,7 +218,7 @@ function draw(): void {
     ctx.font = "bold 34px Segoe UI";
     ctx.fillText("Game Over", canvasWidth / 2, canvasHeight / 2 - 20);
     ctx.font = "16px Segoe UI";
-    ctx.fillText("Druecke Enter fuer Neustart", canvasWidth / 2, canvasHeight / 2 + 18);
+    ctx.fillText("Drücke beliebige Pfeiltaste für Neustart", canvasWidth / 2, canvasHeight / 2 + 18);
   }
 }
 
