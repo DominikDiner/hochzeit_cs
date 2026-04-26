@@ -815,6 +815,9 @@ onUnmounted(() => {
             <path
               d="M12 5.2c-3.4 0-5.9 2.4-5.9 5.5 0 2.1 1.1 3.9 2.9 4.9V18c0 .9.7 1.6 1.6 1.6h2.8c.9 0 1.6-.7 1.6-1.6v-2.4c1.8-1 2.9-2.8 2.9-4.9 0-3.1-2.5-5.5-5.9-5.5Z"
               fill="#f8fafc"
+              stroke="#0f172a"
+              stroke-width="1"
+              stroke-linejoin="round"
             />
             <ellipse cx="9.7" cy="10.4" rx="1.4" ry="1.7" fill="#0f172a" />
             <ellipse cx="14.3" cy="10.4" rx="1.4" ry="1.7" fill="#0f172a" />
@@ -1059,7 +1062,6 @@ onUnmounted(() => {
   filter: drop-shadow(1px 0 0 #0f172a) drop-shadow(-1px 0 0 #0f172a) drop-shadow(0 1px 0 #0f172a) drop-shadow(0 -1px 0 #0f172a) drop-shadow(1px 1px 0 #0f172a) drop-shadow(-1px -1px 0 #0f172a) drop-shadow(-1px 1px 0 #0f172a) drop-shadow(1px -1px 0 #0f172a);
 }
 
-.loss-skull-icon,
 .pixel-portrait {
   filter: drop-shadow(1.2px 0 0 #0f172a) drop-shadow(-1.2px 0 0 #0f172a) drop-shadow(0 1.2px 0 #0f172a) drop-shadow(0 -1.2px 0 #0f172a) drop-shadow(1.2px 1.2px 0 #0f172a) drop-shadow(-1.2px -1.2px 0 #0f172a) drop-shadow(-1.2px 1.2px 0 #0f172a) drop-shadow(1.2px -1.2px 0 #0f172a);
 }
