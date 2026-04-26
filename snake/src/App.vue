@@ -473,30 +473,33 @@ onUnmounted(() => {
 
     <section class="hud">
       <div class="hud-item">
+        <p class="score-label">Score</p>
+
         <div class="hud-icon" aria-hidden="true">
           <svg class="label-icon" viewBox="0 0 24 24">
-            <path
-              d="M12 7.4C9.3 4 4.5 4.8 4 10c-.5 5 3 9.7 8 9.7s8.5-4.7 8-9.7c-.5-5.2-5.3-6-8-2.6Z"
-              fill="#ef4444"
-            />
-            <path
-              d="M12 7.3c-.1-2.1.7-3.8 2.2-5"
-              fill="none"
-              stroke="#7c2d12"
-              stroke-width="1.6"
-              stroke-linecap="round"
-            />
-            <path d="M12.8 4.4c1.4-1.1 2.9-1.4 4.6-.8-1 1.5-2.6 2.1-4.6.8Z" fill="#22c55e" />
+            <g transform="translate(0 1)">
+              <path
+                d="M12 7.4C9.3 4 4.5 4.8 4 10c-.5 5 3 9.7 8 9.7s8.5-4.7 8-9.7c-.5-5.2-5.3-6-8-2.6Z"
+                fill="#ef4444"
+              />
+              <path
+                d="M12 7.3c-.1-2.1.7-3.8 2.2-5"
+                fill="none"
+                stroke="#7c2d12"
+                stroke-width="1.6"
+                stroke-linecap="round"
+              />
+              <path d="M12.8 4.4c1.4-1.1 2.9-1.4 4.6-.8-1 1.5-2.6 2.1-4.6.8Z" fill="#22c55e" />
+            </g>
           </svg>
         </div>
 
-        <div class="hud-content">
-          <p class="score-label">Score</p>
-          <p class="score-value">{{ score }}</p>
-        </div>
+        <p class="score-value">{{ score }}</p>
       </div>
 
       <div class="hud-item">
+        <p class="score-label">Verloren</p>
+
         <div class="hud-icon" aria-hidden="true">
           <svg class="label-icon" viewBox="0 0 24 24">
             <path
@@ -517,10 +520,7 @@ onUnmounted(() => {
           </svg>
         </div>
 
-        <div class="hud-content">
-          <p class="score-label">Verloren</p>
-          <p class="score-value">{{ losses }}</p>
-        </div>
+        <p class="score-value">{{ losses }}</p>
       </div>
     </section>
   </main>
@@ -551,6 +551,7 @@ onUnmounted(() => {
 }
 
 .hud {
+  --counter-size: clamp(4rem, 8vw, 7rem);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -560,23 +561,22 @@ onUnmounted(() => {
 }
 
 .hud-item {
-  display: flex;
-  align-items: stretch;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  grid-template-areas:
+    ". label"
+    "icon value";
+  align-items: center;
+  column-gap: 1rem;
+  gap: 0.45rem;
 }
 
 .hud-item + .hud-item {
   margin-top: 64px;
 }
 
-.hud-content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.3rem;
-}
-
 .score-label {
+  grid-area: label;
   margin: 0;
   font-size: 1rem;
   text-transform: uppercase;
@@ -585,9 +585,12 @@ onUnmounted(() => {
 }
 
 .hud-icon {
+  grid-area: icon;
   display: flex;
-  align-items: stretch;
+  align-items: center;
+  justify-content: center;
   flex: 0 0 auto;
+  height: var(--counter-size);
 }
 
 .label-icon {
@@ -597,8 +600,9 @@ onUnmounted(() => {
 }
 
 .score-value {
+  grid-area: value;
   margin: 0;
-  font-size: clamp(4rem, 8vw, 7rem);
+  font-size: var(--counter-size);
   line-height: 0.95;
   font-weight: 800;
   color: #f8fafc;
