@@ -10,8 +10,8 @@ interface Position {
 }
 
 const tileSize = 24;
-const columns = 20;
-const rows = 20;
+const columns = 15;
+const rows = 15;
 const tickMs = 130;
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
