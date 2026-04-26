@@ -790,7 +790,10 @@ onUnmounted(() => {
           </svg>
         </div>
 
-        <p class="score-value">{{ score }}</p>
+        <div class="score-value-row">
+          <p class="score-value">{{ score }}</p>
+          <p class="score-target">von {{ winScore }}</p>
+        </div>
       </div>
 
       <div class="hud-item">
@@ -1048,6 +1051,22 @@ onUnmounted(() => {
   line-height: 0.95;
   font-weight: 800;
   color: #f8fafc;
+}
+
+.score-value-row {
+  grid-area: value;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.45rem;
+}
+
+.score-target {
+  margin: 0 0 0.75rem;
+  font-size: calc(var(--counter-size) * 0.28);
+  font-weight: 700;
+  line-height: 1;
+  color: #dbeafe;
+  text-transform: uppercase;
 }
 
 .board {
