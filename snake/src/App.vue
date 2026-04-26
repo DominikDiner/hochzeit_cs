@@ -18,6 +18,7 @@ const score = ref(0);
 const losses = ref(0);
 const gameOver = ref(false);
 const hasStarted = ref(false);
+const lastDirectionBy = ref<"braut" | "braeutigam">("braut");
 
 const snake = ref<Position[]>([]);
 const food = ref<Position>({ x: 0, y: 0 });
@@ -483,6 +484,8 @@ function onKeyDown(event: KeyboardEvent): void {
     return;
   }
 
+  lastDirectionBy.value = nextDirection === "up" || nextDirection === "down" ? "braeutigam" : "braut";
+
   event.preventDefault();
 
   if (!hasStarted.value || gameOver.value) {
@@ -581,6 +584,69 @@ onUnmounted(() => {
 
         <p class="score-value">{{ losses }}</p>
       </div>
+
+      <div class="last-direction">
+        <p class="last-direction-label">Letzte Richtung von</p>
+
+        <div class="last-direction-content">
+          <svg v-if="lastDirectionBy === 'braut'" class="pixel-portrait" viewBox="0 0 60 60" aria-hidden="true">
+            <rect x="14" y="4" width="32" height="4" fill="#f8fafc" />
+            <rect x="10" y="8" width="40" height="4" fill="#f8fafc" />
+            <rect x="8" y="12" width="44" height="20" fill="#eef3f8" />
+            <rect x="6" y="20" width="6" height="22" fill="#e3ebf3" />
+            <rect x="48" y="20" width="6" height="22" fill="#e3ebf3" />
+
+            <rect x="16" y="10" width="28" height="5" fill="#9a6537" />
+            <rect x="12" y="15" width="36" height="6" fill="#8a582f" />
+            <rect x="10" y="21" width="8" height="14" fill="#7a4d2a" />
+            <rect x="42" y="21" width="8" height="14" fill="#7a4d2a" />
+            <rect x="18" y="20" width="24" height="18" fill="#f8ecdf" />
+            <rect x="20" y="23" width="20" height="11" fill="#fcf2e8" />
+            <rect x="24" y="35" width="12" height="3" fill="#e7d0bc" />
+            <rect x="23" y="38" width="14" height="2" fill="#dcc2ad" />
+
+            <rect x="23" y="25" width="4" height="2" fill="#7a4d2a" />
+            <rect x="33" y="25" width="4" height="2" fill="#7a4d2a" />
+            <rect x="24" y="27" width="3" height="3" fill="#0f172a" />
+            <rect x="33" y="27" width="3" height="3" fill="#0f172a" />
+            <rect x="28" y="31" width="4" height="2" fill="#f4a9a9" />
+            <rect x="27" y="33" width="6" height="1" fill="#e68d8d" />
+
+            <rect x="14" y="40" width="32" height="5" fill="#ffffff" />
+            <rect x="10" y="45" width="40" height="6" fill="#f8fbff" />
+            <rect x="8" y="51" width="44" height="5" fill="#edf4fb" />
+            <rect x="22" y="41" width="16" height="4" fill="#f8fafc" />
+            <rect x="26" y="45" width="8" height="4" fill="#dbe7f3" />
+          </svg>
+
+          <svg v-else class="pixel-portrait" viewBox="0 0 60 60" aria-hidden="true">
+            <rect x="16" y="5" width="28" height="4" fill="#3a2517" />
+            <rect x="12" y="9" width="36" height="5" fill="#2b1c12" />
+            <rect x="10" y="14" width="40" height="5" fill="#24170f" />
+            <rect x="10" y="19" width="8" height="11" fill="#24170f" />
+            <rect x="42" y="19" width="8" height="11" fill="#24170f" />
+
+            <rect x="18" y="18" width="24" height="18" fill="#f8ecdf" />
+            <rect x="20" y="21" width="20" height="11" fill="#fcf2e8" />
+            <rect x="23" y="33" width="14" height="3" fill="#e6cfbc" />
+            <rect x="25" y="36" width="10" height="2" fill="#d9beaa" />
+
+            <rect x="23" y="24" width="3" height="3" fill="#111827" />
+            <rect x="34" y="24" width="3" height="3" fill="#111827" />
+            <rect x="28" y="29" width="4" height="2" fill="#efaaaa" />
+            <rect x="27" y="31" width="6" height="1" fill="#e08e8e" />
+
+            <rect x="12" y="40" width="36" height="5" fill="#111111" />
+            <rect x="9" y="45" width="42" height="6" fill="#0b0b0b" />
+            <rect x="8" y="51" width="44" height="5" fill="#171717" />
+            <rect x="24" y="40" width="12" height="5" fill="#f8fafc" />
+            <rect x="26" y="45" width="8" height="11" fill="#f8fafc" />
+            <rect x="28" y="45" width="4" height="11" fill="#111827" />
+          </svg>
+
+          <p class="last-direction-name">{{ lastDirectionBy === "braut" ? "Catherine" : "Stefan" }}</p>
+        </div>
+      </div>
     </section>
   </main>
 </template>
@@ -632,6 +698,42 @@ onUnmounted(() => {
 
 .hud-item + .hud-item {
   margin-top: 64px;
+}
+
+.last-direction {
+  margin-top: 128px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+
+.last-direction-label {
+  margin: 0;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #94a3b8;
+}
+
+.last-direction-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pixel-portrait {
+  width: 86px;
+  height: 108px;
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+}
+
+.last-direction-name {
+  margin: 0;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #f8fafc;
 }
 
 .score-label {
