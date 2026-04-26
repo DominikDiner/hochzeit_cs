@@ -45,6 +45,7 @@ const colorGrid = "#94a3b8";
 const colorSnakeBody = "#16a34a";
 const colorSnakeHighlight = "#86efac";
 const colorFoodBody = "#ff4d6d";
+const colorFoodOutline = "#be123c";
 const colorFoodStem = "#6b3f1d";
 const colorFoodLeaf = "#34d399";
 const colorOverlayBg = "rgba(248, 250, 252, 0.84)";
@@ -348,7 +349,7 @@ function drawGrid(ctx: CanvasRenderingContext2D): void {
 function drawFood(ctx: CanvasRenderingContext2D, position: Position): void {
   const baseX = position.x * tileSize;
   const baseY = position.y * tileSize;
-  const appleSize = tileSize - 2;
+  const appleSize = (tileSize - 2) * 1.5;
   const offset = (tileSize - appleSize) / 2;
   const scale = appleSize / appleViewBoxSize;
 
@@ -362,6 +363,11 @@ function drawFood(ctx: CanvasRenderingContext2D, position: Position): void {
 
   ctx.fillStyle = colorFoodBody;
   ctx.fill(appleBodyPath);
+
+  ctx.strokeStyle = colorFoodOutline;
+  ctx.lineWidth = 1.5;
+  ctx.lineJoin = "round";
+  ctx.stroke(appleBodyPath);
 
   ctx.strokeStyle = colorFoodStem;
   ctx.lineWidth = 1.6;
@@ -772,11 +778,14 @@ onUnmounted(() => {
         <p class="score-label">Score</p>
 
         <div class="hud-icon" aria-hidden="true">
-          <svg class="label-icon" viewBox="0 0 24 24">
+          <svg class="label-icon score-apple-icon" viewBox="0 0 24 24">
             <g transform="translate(0 1)">
               <path
                 d="M12 7.4C9.3 4 4.5 4.8 4 10c-.5 5 3 9.7 8 9.7s8.5-4.7 8-9.7c-.5-5.2-5.3-6-8-2.6Z"
                 fill="#ff4d6d"
+                stroke="#be123c"
+                stroke-width="1.2"
+                stroke-linejoin="round"
               />
               <path
                 d="M12 7.3c-.1-2.1.7-3.8 2.2-5"
@@ -1047,15 +1056,11 @@ onUnmounted(() => {
 .label-icon,
 .direction-icon,
 .pixel-portrait {
-  filter:
-    drop-shadow(1px 0 0 #0f172a)
-    drop-shadow(-1px 0 0 #0f172a)
-    drop-shadow(0 1px 0 #0f172a)
-    drop-shadow(0 -1px 0 #0f172a)
-    drop-shadow(1px 1px 0 #0f172a)
-    drop-shadow(-1px -1px 0 #0f172a)
-    drop-shadow(-1px 1px 0 #0f172a)
-    drop-shadow(1px -1px 0 #0f172a);
+  filter: drop-shadow(1px 0 0 #0f172a) drop-shadow(-1px 0 0 #0f172a) drop-shadow(0 1px 0 #0f172a) drop-shadow(0 -1px 0 #0f172a) drop-shadow(1px 1px 0 #0f172a) drop-shadow(-1px -1px 0 #0f172a) drop-shadow(-1px 1px 0 #0f172a) drop-shadow(1px -1px 0 #0f172a);
+}
+
+.score-apple-icon {
+  filter: none;
 }
 
 .score-value {
