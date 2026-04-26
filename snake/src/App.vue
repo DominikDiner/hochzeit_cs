@@ -710,7 +710,7 @@ onUnmounted(() => {
 }
 
 .hud {
-  --counter-size: clamp(4rem, 8vw, 7rem);
+  --counter-size: 9rem;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
