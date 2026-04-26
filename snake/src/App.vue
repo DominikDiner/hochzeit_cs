@@ -1044,6 +1044,20 @@ onUnmounted(() => {
   height: 100%;
 }
 
+.label-icon,
+.direction-icon,
+.pixel-portrait {
+  filter:
+    drop-shadow(1px 0 0 #0f172a)
+    drop-shadow(-1px 0 0 #0f172a)
+    drop-shadow(0 1px 0 #0f172a)
+    drop-shadow(0 -1px 0 #0f172a)
+    drop-shadow(1px 1px 0 #0f172a)
+    drop-shadow(-1px -1px 0 #0f172a)
+    drop-shadow(-1px 1px 0 #0f172a)
+    drop-shadow(1px -1px 0 #0f172a);
+}
+
 .score-value {
   grid-area: value;
   margin: 0;
