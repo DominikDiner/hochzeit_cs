@@ -1063,7 +1063,7 @@ onUnmounted(() => {
 }
 
 .pixel-portrait {
-  filter: drop-shadow(4px 0 0 #0f172a) drop-shadow(-4px 0 0 #0f172a) drop-shadow(0 4px 0 #0f172a) drop-shadow(0 -4px 0 #0f172a);
+  filter: drop-shadow(4px 0 0 #22273e) drop-shadow(-4px 0 0 #22273e) drop-shadow(0 4px 0 #22273e) drop-shadow(0 -4px 0 #22273e);
 }
 
 .score-apple-icon {
