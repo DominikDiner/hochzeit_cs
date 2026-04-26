@@ -17,6 +17,7 @@ const canvasRef = ref<HTMLCanvasElement | null>(null);
 const score = ref(0);
 const losses = ref(0);
 const gameOver = ref(false);
+const hasWon = ref(false);
 const hasStarted = ref(false);
 const lastDirectionBy = ref<"braut" | "braeutigam">("braut");
 const lastDirectionIcon = ref<Direction>("right");
@@ -48,6 +49,7 @@ const colorOverlayBg = "rgba(15, 23, 42, 0.8)";
 const colorOverlayText = "#ffffff";
 const colorOverlayTextOutline = "#020617";
 const musicNotes = [261.63, 329.63, 392.0, 349.23, 329.63, 293.66, 329.63, 392.0];
+const winScore = 20;
 
 function initAudio(): void {
   if (audioContextRef.value && masterGainRef.value) {
@@ -117,6 +119,14 @@ function playLoseSound(): void {
   playTone(330, 0.14, "sawtooth", 0.18);
   playTone(220, 0.18, "sawtooth", 0.17, 0.12);
   playTone(146.83, 0.24, "sawtooth", 0.15, 0.26);
+}
+
+function playWinSound(): void {
+  ensureAudioRunning();
+  playTone(523.25, 0.14, "triangle", 0.16);
+  playTone(659.25, 0.14, "triangle", 0.16, 0.1);
+  playTone(783.99, 0.16, "triangle", 0.18, 0.2);
+  playTone(1046.5, 0.26, "triangle", 0.2, 0.32);
 }
 
 function startBackgroundMusic(): void {
@@ -189,6 +199,7 @@ function resetGame(): void {
   pendingDirection.value = "right";
   score.value = 0;
   gameOver.value = false;
+  hasWon.value = false;
   hasStarted.value = false;
   spawnFood();
   draw();
@@ -216,7 +227,7 @@ function startLoop(): void {
 }
 
 function tick(): void {
-  if (gameOver.value || !hasStarted.value) return;
+  if (gameOver.value || hasWon.value || !hasStarted.value) return;
 
   if (!isOpposite(pendingDirection.value, direction.value)) {
     direction.value = pendingDirection.value;
@@ -252,6 +263,15 @@ function tick(): void {
     playEatSound();
     score.value += 1;
     snake.value = nextSnake;
+
+    if (score.value >= winScore) {
+      hasWon.value = true;
+      stopLoop();
+      playWinSound();
+      draw();
+      return;
+    }
+
     spawnFood();
   } else {
     nextSnake.shift();
@@ -522,7 +542,7 @@ function draw(): void {
 
   drawSnake(ctx);
 
-  if (gameOver.value || !hasStarted.value) {
+  if (gameOver.value || hasWon.value || !hasStarted.value) {
     ctx.fillStyle = colorOverlayBg;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
@@ -530,7 +550,38 @@ function draw(): void {
     ctx.strokeStyle = colorOverlayTextOutline;
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    if (gameOver.value) {
+    if (hasWon.value) {
+      const titleLines = ["Ihr habt gewonnen!"];
+      const codeLines = ["Der restliche Code", "ist XYZ"];
+      const titleMaxWidth = canvasWidth * 0.9;
+      const codeMaxWidth = canvasWidth * 0.9;
+      const titleFontSize = Math.min(
+        ...titleLines.map((line) => getFittedFontSize(ctx, line, titleMaxWidth, "800", 94, 42))
+      );
+      const codeFontSize = Math.min(
+        ...codeLines.map((line) => getFittedFontSize(ctx, line, codeMaxWidth, "800", 76, 34))
+      );
+      const titleLineHeight = titleFontSize * 0.96;
+      const codeLineHeight = codeFontSize * 0.96;
+      const spacerHeight = titleLineHeight;
+      const blockHeight = titleLineHeight * titleLines.length + spacerHeight + codeLineHeight * codeLines.length;
+      const blockStartY = (canvasHeight - blockHeight) / 2;
+
+      ctx.font = `800 ${titleFontSize}px Segoe UI`;
+      ctx.lineWidth = 6;
+      drawCenteredTextLinesWithOutline(ctx, titleLines, canvasWidth / 2, blockStartY, titleLineHeight, 6);
+
+      ctx.font = `800 ${codeFontSize}px Segoe UI`;
+      ctx.lineWidth = 6;
+      drawCenteredTextLinesWithOutline(
+        ctx,
+        codeLines,
+        canvasWidth / 2,
+        blockStartY + titleLineHeight * titleLines.length + spacerHeight,
+        codeLineHeight,
+        6
+      );
+    } else if (gameOver.value) {
       const titleLines = ["GAME", "OVER"];
       const hintLines = ["Drücke eine Pfeiltaste", "zum Starten"];
       const titleMaxWidth = canvasWidth * 0.9;
@@ -600,6 +651,11 @@ function onKeyDown(event: KeyboardEvent): void {
   }
 
   if (!nextDirection) {
+    return;
+  }
+
+  if (hasWon.value) {
+    event.preventDefault();
     return;
   }
 
