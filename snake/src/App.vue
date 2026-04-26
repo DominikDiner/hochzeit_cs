@@ -164,12 +164,29 @@ function drawGrid(ctx: CanvasRenderingContext2D): void {
   }
 }
 
+function syncCanvasResolution(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D): void {
+  const dpr = window.devicePixelRatio || 1;
+  const displayWidth = Math.max(1, Math.round(canvas.clientWidth));
+  const displayHeight = Math.max(1, Math.round(canvas.clientHeight));
+  const pixelWidth = Math.max(1, Math.round(displayWidth * dpr));
+  const pixelHeight = Math.max(1, Math.round(displayHeight * dpr));
+
+  if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+    canvas.width = pixelWidth;
+    canvas.height = pixelHeight;
+  }
+
+  ctx.setTransform(canvas.width / canvasWidth, 0, 0, canvas.height / canvasHeight, 0, 0);
+}
+
 function draw(): void {
   const canvas = canvasRef.value;
   if (!canvas) return;
 
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
+
+  syncCanvasResolution(canvas, ctx);
 
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
   ctx.fillStyle = "#0f172a";
@@ -205,6 +222,10 @@ function draw(): void {
   }
 }
 
+function onResize(): void {
+  draw();
+}
+
 function onKeyDown(event: KeyboardEvent): void {
   switch (event.key) {
     case "ArrowUp":
@@ -237,10 +258,12 @@ onMounted(() => {
   resetGame();
   startLoop();
   window.addEventListener("keydown", onKeyDown);
+  window.addEventListener("resize", onResize);
 });
 
 onUnmounted(() => {
   window.removeEventListener("keydown", onKeyDown);
+  window.removeEventListener("resize", onResize);
   stopLoop();
 });
 </script>
@@ -322,7 +345,6 @@ onUnmounted(() => {
   max-height: 100%;
   border: 2px solid #334155;
   border-radius: 8px;
-  image-rendering: pixelated;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
 }
 </style>
