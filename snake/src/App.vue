@@ -26,6 +26,10 @@ const food = ref<Position>({ x: 0, y: 0 });
 const direction = ref<Direction>("right");
 const pendingDirection = ref<Direction>("right");
 const intervalId = ref<number | null>(null);
+const audioContextRef = ref<AudioContext | null>(null);
+const masterGainRef = ref<GainNode | null>(null);
+const musicIntervalId = ref<number | null>(null);
+const musicStep = ref(0);
 
 const canvasWidth = columns * tileSize;
 const canvasHeight = rows * tileSize;
@@ -43,6 +47,98 @@ const colorFoodLeaf = "#34d399";
 const colorOverlayBg = "rgba(15, 23, 42, 0.8)";
 const colorOverlayText = "#ffffff";
 const colorOverlayTextOutline = "#020617";
+const musicNotes = [261.63, 329.63, 392.0, 349.23, 329.63, 293.66, 329.63, 392.0];
+
+function initAudio(): void {
+  if (audioContextRef.value && masterGainRef.value) {
+    return;
+  }
+
+  const context = new window.AudioContext();
+  const masterGain = context.createGain();
+  masterGain.gain.value = 0.12;
+  masterGain.connect(context.destination);
+
+  audioContextRef.value = context;
+  masterGainRef.value = masterGain;
+}
+
+function ensureAudioRunning(): void {
+  initAudio();
+
+  const context = audioContextRef.value;
+  if (context && context.state === "suspended") {
+    void context.resume();
+  }
+}
+
+function playTone(
+  frequency: number,
+  durationSeconds: number,
+  type: OscillatorType,
+  volume: number,
+  delaySeconds = 0
+): void {
+  const context = audioContextRef.value;
+  const masterGain = masterGainRef.value;
+  if (!context || !masterGain) return;
+
+  const now = context.currentTime + delaySeconds;
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(frequency, now);
+
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, volume), now + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + durationSeconds);
+
+  oscillator.connect(gain);
+  gain.connect(masterGain);
+
+  oscillator.start(now);
+  oscillator.stop(now + durationSeconds + 0.03);
+}
+
+function playEatSound(): void {
+  ensureAudioRunning();
+  playTone(740, 0.08, "triangle", 0.19);
+  playTone(988, 0.1, "triangle", 0.17, 0.06);
+}
+
+function playTurnSound(): void {
+  ensureAudioRunning();
+  playTone(460, 0.05, "square", 0.12);
+}
+
+function playLoseSound(): void {
+  ensureAudioRunning();
+  playTone(330, 0.14, "sawtooth", 0.18);
+  playTone(220, 0.18, "sawtooth", 0.17, 0.12);
+  playTone(146.83, 0.24, "sawtooth", 0.15, 0.26);
+}
+
+function startBackgroundMusic(): void {
+  ensureAudioRunning();
+  if (musicIntervalId.value !== null) return;
+
+  musicIntervalId.value = window.setInterval(() => {
+    const note = musicNotes[musicStep.value % musicNotes.length];
+    musicStep.value += 1;
+    if (!note) return;
+
+    playTone(note, 0.28, "sine", 0.07);
+    playTone(note / 2, 0.24, "triangle", 0.04, 0.02);
+  }, 360);
+}
+
+function stopBackgroundMusic(): void {
+  if (musicIntervalId.value !== null) {
+    window.clearInterval(musicIntervalId.value);
+    musicIntervalId.value = null;
+  }
+}
 
 function randomInt(maxExclusive: number): number {
   return Math.floor(Math.random() * maxExclusive);
@@ -141,6 +237,7 @@ function tick(): void {
   const hitSelf = containsPosition(snake.value, nextHead);
 
   if (hitWall || hitSelf) {
+    playLoseSound();
     losses.value += 1;
     gameOver.value = true;
     stopLoop();
@@ -152,6 +249,7 @@ function tick(): void {
   const didEatFood = nextHead.x === food.value.x && nextHead.y === food.value.y;
 
   if (didEatFood) {
+    playEatSound();
     score.value += 1;
     snake.value = nextSnake;
     spawnFood();
@@ -505,6 +603,13 @@ function onKeyDown(event: KeyboardEvent): void {
     return;
   }
 
+  ensureAudioRunning();
+  startBackgroundMusic();
+
+  if (nextDirection !== pendingDirection.value) {
+    playTurnSound();
+  }
+
   lastDirectionIcon.value = nextDirection;
   lastDirectionBy.value = nextDirection === "up" || nextDirection === "down" ? "braeutigam" : "braut";
 
@@ -530,12 +635,21 @@ function onKeyDown(event: KeyboardEvent): void {
 }
 
 onMounted(() => {
+  startBackgroundMusic();
   resetGame();
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("resize", onResize);
 });
 
 onUnmounted(() => {
+  stopBackgroundMusic();
+
+  if (audioContextRef.value) {
+    void audioContextRef.value.close();
+    audioContextRef.value = null;
+    masterGainRef.value = null;
+  }
+
   window.removeEventListener("keydown", onKeyDown);
   window.removeEventListener("resize", onResize);
   stopLoop();
