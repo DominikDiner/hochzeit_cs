@@ -664,15 +664,17 @@ function draw(): void {
       ctx.font = "bold 30px Segoe UI";
 
       const hintLines = ["Drücke eine Pfeiltaste", "zum Starten"];
-      const hintMaxWidth = canvasWidth * 0.82;
+      const hintMaxWidth = canvasWidth * 0.84;
       const hintFontSize = Math.min(
-        ...hintLines.map((line) => getFittedFontSize(ctx, line, hintMaxWidth, "500", 24, 16))
+        ...hintLines.map((line) => getFittedFontSize(ctx, line, hintMaxWidth, "600", 28, 18))
       );
       const hintLineHeight = hintFontSize * 1.05;
+      const blockHeight = hintLineHeight * hintLines.length;
+      const blockStartY = (canvasHeight - blockHeight) / 2;
 
-      ctx.font = `500 ${hintFontSize}px Segoe UI`;
+      ctx.font = `600 ${hintFontSize}px Segoe UI`;
       ctx.lineWidth = 3;
-      drawCenteredTextLinesWithOutline(ctx, hintLines, canvasWidth / 2, canvasHeight / 2 + 8, hintLineHeight, 3);
+      drawCenteredTextLinesWithOutline(ctx, hintLines, canvasWidth / 2, blockStartY, hintLineHeight, 3);
     }
   }
 }
