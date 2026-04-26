@@ -15,6 +15,7 @@ const tickMs = 130;
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const score = ref(0);
+const losses = ref(0);
 const gameOver = ref(false);
 const hasStarted = ref(false);
 
@@ -124,6 +125,7 @@ function tick(): void {
   const hitSelf = containsPosition(snake.value, nextHead);
 
   if (hitWall || hitSelf) {
+    losses.value += 1;
     gameOver.value = true;
     stopLoop();
     draw();
@@ -305,8 +307,56 @@ onUnmounted(() => {
     </div>
 
     <section class="hud">
-      <p class="score-label">Score</p>
-      <p class="score-value">{{ score }}</p>
+      <div class="hud-item">
+        <div class="hud-icon" aria-hidden="true">
+          <svg class="label-icon" viewBox="0 0 24 24">
+            <path
+              d="M12 7.4C9.3 4 4.5 4.8 4 10c-.5 5 3 9.7 8 9.7s8.5-4.7 8-9.7c-.5-5.2-5.3-6-8-2.6Z"
+              fill="#ef4444"
+            />
+            <path
+              d="M12 7.3c-.1-2.1.7-3.8 2.2-5"
+              fill="none"
+              stroke="#7c2d12"
+              stroke-width="1.6"
+              stroke-linecap="round"
+            />
+            <path d="M12.8 4.4c1.4-1.1 2.9-1.4 4.6-.8-1 1.5-2.6 2.1-4.6.8Z" fill="#22c55e" />
+          </svg>
+        </div>
+
+        <div class="hud-content">
+          <p class="score-label">Score</p>
+          <p class="score-value">{{ score }}</p>
+        </div>
+      </div>
+
+      <div class="hud-item">
+        <div class="hud-icon" aria-hidden="true">
+          <svg class="label-icon" viewBox="0 0 24 24">
+            <path
+              d="M12 5.2c-3.4 0-5.9 2.4-5.9 5.5 0 2.1 1.1 3.9 2.9 4.9V18c0 .9.7 1.6 1.6 1.6h2.8c.9 0 1.6-.7 1.6-1.6v-2.4c1.8-1 2.9-2.8 2.9-4.9 0-3.1-2.5-5.5-5.9-5.5Z"
+              fill="#f8fafc"
+            />
+            <ellipse cx="9.7" cy="10.4" rx="1.4" ry="1.7" fill="#0f172a" />
+            <ellipse cx="14.3" cy="10.4" rx="1.4" ry="1.7" fill="#0f172a" />
+            <path d="M12 12.1 10.9 14h2.2L12 12.1Z" fill="#0f172a" />
+            <rect x="9.4" y="15.2" width="5.2" height="2" rx="0.6" fill="#e2e8f0" />
+            <path
+              d="M11.1 15.4v1.6M12.9 15.4v1.6"
+              fill="none"
+              stroke="#94a3b8"
+              stroke-width="0.7"
+              stroke-linecap="round"
+            />
+          </svg>
+        </div>
+
+        <div class="hud-content">
+          <p class="score-label">Verloren</p>
+          <p class="score-value">{{ losses }}</p>
+        </div>
+      </div>
     </section>
   </main>
 </template>
@@ -339,10 +389,26 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.3rem;
   width: 33%;
   flex: 0 0 33%;
   max-width: 33%;
+}
+
+.hud-item {
+  display: flex;
+  align-items: stretch;
+  gap: 1rem;
+}
+
+.hud-item + .hud-item {
+  margin-top: 64px;
+}
+
+.hud-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
 }
 
 .score-label {
@@ -351,6 +417,18 @@ onUnmounted(() => {
   text-transform: uppercase;
   letter-spacing: 0.18em;
   color: #94a3b8;
+}
+
+.hud-icon {
+  display: flex;
+  align-items: stretch;
+  flex: 0 0 auto;
+}
+
+.label-icon {
+  display: block;
+  width: auto;
+  height: 100%;
 }
 
 .score-value {
