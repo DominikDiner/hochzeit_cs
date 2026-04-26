@@ -2,6 +2,7 @@
 import { onMounted, onUnmounted, ref } from "vue";
 
 type Direction = "up" | "down" | "left" | "right"
+type MusicState = "idle" | "playing" | "lose" | "win"
 
 interface Position {
   x: number;
@@ -31,6 +32,7 @@ const audioContextRef = ref<AudioContext | null>(null);
 const masterGainRef = ref<GainNode | null>(null);
 const musicIntervalId = ref<number | null>(null);
 const musicStep = ref(0);
+const musicState = ref<MusicState>("idle");
 
 const canvasWidth = columns * tileSize;
 const canvasHeight = rows * tileSize;
@@ -49,6 +51,8 @@ const colorOverlayBg = "rgba(15, 23, 42, 0.8)";
 const colorOverlayText = "#ffffff";
 const colorOverlayTextOutline = "#020617";
 const musicNotes = [261.63, 329.63, 392.0, 349.23, 329.63, 293.66, 329.63, 392.0];
+const loseMusicNotes = [293.66, 261.63, 220.0, 196.0, 174.61, 196.0];
+const winMusicNotes = [523.25, 659.25, 783.99, 1046.5, 783.99, 1318.51, 1046.5, 783.99];
 const winScore = 20;
 
 function initAudio(): void {
@@ -129,18 +133,40 @@ function playWinSound(): void {
   playTone(1046.5, 0.26, "triangle", 0.2, 0.32);
 }
 
-function startBackgroundMusic(): void {
+function startBackgroundMusic(nextState: Exclude<MusicState, "idle">): void {
   ensureAudioRunning();
-  if (musicIntervalId.value !== null) return;
+  stopBackgroundMusic();
+  musicState.value = nextState;
+  musicStep.value = 0;
+
+  const intervalMs = nextState === "playing" ? 360 : nextState === "lose" ? 520 : 320;
 
   musicIntervalId.value = window.setInterval(() => {
-    const note = musicNotes[musicStep.value % musicNotes.length];
+    const notes =
+      musicState.value === "playing"
+        ? musicNotes
+        : musicState.value === "lose"
+          ? loseMusicNotes
+          : winMusicNotes;
+    const note = notes[musicStep.value % notes.length];
     musicStep.value += 1;
     if (!note) return;
 
-    playTone(note, 0.28, "sine", 0.07);
-    playTone(note / 2, 0.24, "triangle", 0.04, 0.02);
-  }, 360);
+    if (musicState.value === "playing") {
+      playTone(note, 0.28, "sine", 0.07);
+      playTone(note / 2, 0.24, "triangle", 0.04, 0.02);
+      return;
+    }
+
+    if (musicState.value === "lose") {
+      playTone(note, 0.42, "sine", 0.075);
+      playTone(note / 2, 0.46, "triangle", 0.042, 0.02);
+      return;
+    }
+
+    playTone(note, 0.22, "triangle", 0.1);
+    playTone(note * 1.5, 0.16, "square", 0.055, 0.04);
+  }, intervalMs);
 }
 
 function stopBackgroundMusic(): void {
@@ -148,6 +174,20 @@ function stopBackgroundMusic(): void {
     window.clearInterval(musicIntervalId.value);
     musicIntervalId.value = null;
   }
+}
+
+function setMusicState(nextState: MusicState): void {
+  if (musicState.value === nextState && (nextState === "idle" || musicIntervalId.value !== null)) {
+    return;
+  }
+
+  if (nextState === "idle") {
+    stopBackgroundMusic();
+    musicState.value = "idle";
+    return;
+  }
+
+  startBackgroundMusic(nextState);
 }
 
 function randomInt(maxExclusive: number): number {
@@ -201,6 +241,7 @@ function resetGame(): void {
   gameOver.value = false;
   hasWon.value = false;
   hasStarted.value = false;
+  setMusicState("idle");
   spawnFood();
   draw();
 }
@@ -249,6 +290,7 @@ function tick(): void {
 
   if (hitWall || hitSelf) {
     playLoseSound();
+    setMusicState("lose");
     losses.value += 1;
     gameOver.value = true;
     stopLoop();
@@ -268,6 +310,7 @@ function tick(): void {
       hasWon.value = true;
       stopLoop();
       playWinSound();
+      setMusicState("win");
       draw();
       return;
     }
@@ -660,7 +703,6 @@ function onKeyDown(event: KeyboardEvent): void {
   }
 
   ensureAudioRunning();
-  startBackgroundMusic();
 
   if (nextDirection !== pendingDirection.value) {
     playTurnSound();
@@ -677,6 +719,7 @@ function onKeyDown(event: KeyboardEvent): void {
     }
 
     hasStarted.value = true;
+    setMusicState("playing");
 
     if (!isOpposite(nextDirection, direction.value)) {
       direction.value = nextDirection;
@@ -691,14 +734,13 @@ function onKeyDown(event: KeyboardEvent): void {
 }
 
 onMounted(() => {
-  startBackgroundMusic();
   resetGame();
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("resize", onResize);
 });
 
 onUnmounted(() => {
-  stopBackgroundMusic();
+  setMusicState("idle");
 
   if (audioContextRef.value) {
     void audioContextRef.value.close();
