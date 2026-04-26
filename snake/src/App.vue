@@ -19,6 +19,7 @@ const losses = ref(0);
 const gameOver = ref(false);
 const hasStarted = ref(false);
 const lastDirectionBy = ref<"braut" | "braeutigam">("braut");
+const lastDirectionIcon = ref<Direction>("right");
 
 const snake = ref<Position[]>([]);
 const food = ref<Position>({ x: 0, y: 0 });
@@ -504,6 +505,7 @@ function onKeyDown(event: KeyboardEvent): void {
     return;
   }
 
+  lastDirectionIcon.value = nextDirection;
   lastDirectionBy.value = nextDirection === "up" || nextDirection === "down" ? "braeutigam" : "braut";
 
   event.preventDefault();
@@ -609,6 +611,18 @@ onUnmounted(() => {
         <p class="last-direction-label">Letzte Richtung von</p>
 
         <div class="last-direction-content">
+          <div class="last-direction-arrow" aria-label="Letzte Richtung">
+            <svg class="direction-icon" :class="`dir-${lastDirectionIcon}`" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 3 4.8 10.2h4.6v10.8h5.2V10.2h4.6L12 3Z"
+                fill="#f8fafc"
+                stroke="#0f172a"
+                stroke-width="1.3"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+
           <svg v-if="lastDirectionBy === 'braut'" class="pixel-portrait" viewBox="0 0 60 60" aria-hidden="true">
             <rect x="14" y="4" width="32" height="4" fill="#f8fafc" />
             <rect x="10" y="8" width="40" height="4" fill="#f8fafc" />
@@ -742,6 +756,39 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.last-direction-arrow {
+  width: 78px;
+  height: 78px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 2px solid #93c5fd;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 0 2px rgba(186, 230, 253, 0.2);
+}
+
+.direction-icon {
+  width: 54px;
+  height: 54px;
+  transform-origin: center;
+}
+
+.direction-icon.dir-up {
+  transform: rotate(0deg);
+}
+
+.direction-icon.dir-right {
+  transform: rotate(90deg);
+}
+
+.direction-icon.dir-down {
+  transform: rotate(180deg);
+}
+
+.direction-icon.dir-left {
+  transform: rotate(270deg);
 }
 
 .pixel-portrait {
