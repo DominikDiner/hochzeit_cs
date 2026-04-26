@@ -32,6 +32,16 @@ const appleViewBoxSize = 24;
 const appleBodyPathData = "M12 7.4C9.3 4 4.5 4.8 4 10c-.5 5 3 9.7 8 9.7s8.5-4.7 8-9.7c-.5-5.2-5.3-6-8-2.6Z";
 const appleStemPathData = "M12 7.3c-.1-2.1.7-3.8 2.2-5";
 const appleLeafPathData = "M12.8 4.4c1.4-1.1 2.9-1.4 4.6-.8-1 1.5-2.6 2.1-4.6.8Z";
+const colorBoardBg = "#1e293b";
+const colorGrid = "#64748b";
+const colorSnakeBody = "#16a34a";
+const colorSnakeHighlight = "#86efac";
+const colorFoodBody = "#ff4d6d";
+const colorFoodStem = "#6b3f1d";
+const colorFoodLeaf = "#34d399";
+const colorOverlayBg = "rgba(15, 23, 42, 0.8)";
+const colorOverlayText = "#ffffff";
+const colorOverlayTextOutline = "#020617";
 
 function randomInt(maxExclusive: number): number {
   return Math.floor(Math.random() * maxExclusive);
@@ -153,8 +163,8 @@ function tick(): void {
 }
 
 function drawGrid(ctx: CanvasRenderingContext2D): void {
-  ctx.strokeStyle = "#1f2937";
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = colorGrid;
+  ctx.lineWidth = 1.2;
 
   for (let x = 0; x <= columns; x += 1) {
     const px = x * tileSize + 0.5;
@@ -188,15 +198,15 @@ function drawFood(ctx: CanvasRenderingContext2D, position: Position): void {
   ctx.translate(baseX + offset, baseY + offset);
   ctx.scale(scale, scale);
 
-  ctx.fillStyle = "#dc2626";
+  ctx.fillStyle = colorFoodBody;
   ctx.fill(appleBodyPath);
 
-  ctx.strokeStyle = "#7c2d12";
+  ctx.strokeStyle = colorFoodStem;
   ctx.lineWidth = 1.6;
   ctx.lineCap = "round";
   ctx.stroke(appleStemPath);
 
-  ctx.fillStyle = "#22c55e";
+  ctx.fillStyle = colorFoodLeaf;
   ctx.fill(appleLeafPath);
 
   ctx.restore();
@@ -242,12 +252,12 @@ function drawSnake(ctx: CanvasRenderingContext2D): void {
   ctx.save();
 
   if (segmentCenters.length === 1) {
-    ctx.fillStyle = "#22c55e";
+    ctx.fillStyle = colorSnakeBody;
     ctx.beginPath();
     ctx.arc(firstSegment.x, firstSegment.y, bodyRadius, 0, Math.PI * 2);
     ctx.fill();
   } else {
-    ctx.strokeStyle = "#22c55e";
+    ctx.strokeStyle = colorSnakeBody;
     ctx.lineWidth = bodyWidth;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
@@ -262,7 +272,7 @@ function drawSnake(ctx: CanvasRenderingContext2D): void {
 
     ctx.stroke();
 
-    ctx.strokeStyle = "#4ade80";
+    ctx.strokeStyle = colorSnakeHighlight;
     ctx.lineWidth = bodyWidth * 0.45;
     ctx.beginPath();
     ctx.moveTo(firstSegment.x, firstSegment.y);
@@ -285,13 +295,13 @@ function drawSnake(ctx: CanvasRenderingContext2D): void {
     y: head.y + headDirection.y * headRadius * 0.5
   };
 
-  ctx.fillStyle = "#22c55e";
+  ctx.fillStyle = colorSnakeBody;
   ctx.beginPath();
   ctx.arc(head.x, head.y, headRadius, 0, Math.PI * 2);
   ctx.arc(snoutCenter.x, snoutCenter.y, snoutRadius, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = "#86efac";
+  ctx.fillStyle = colorSnakeHighlight;
   ctx.beginPath();
   ctx.arc(
     head.x - headDirection.x * 1.2,
@@ -362,16 +372,21 @@ function getFittedFontSize(
   return minSize;
 }
 
-function drawCenteredTextLines(
+function drawCenteredTextLinesWithOutline(
   ctx: CanvasRenderingContext2D,
   lines: string[],
   centerX: number,
   startY: number,
-  lineHeight: number
+  lineHeight: number,
+  outlineWidth: number
 ): void {
   lines.forEach((line, index) => {
-    ctx.fillText(line, centerX, startY + index * lineHeight);
+    const y = startY + index * lineHeight;
+    ctx.strokeText(line, centerX, y);
+    ctx.fillText(line, centerX, y);
   });
+
+  ctx.lineWidth = outlineWidth;
 }
 
 function syncCanvasResolution(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D): void {
@@ -399,7 +414,7 @@ function draw(): void {
   syncCanvasResolution(canvas, ctx);
 
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-  ctx.fillStyle = "#0f172a";
+  ctx.fillStyle = colorBoardBg;
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
   drawGrid(ctx);
@@ -409,10 +424,11 @@ function draw(): void {
   drawSnake(ctx);
 
   if (gameOver.value || !hasStarted.value) {
-    ctx.fillStyle = "rgba(2, 6, 23, 0.72)";
+    ctx.fillStyle = colorOverlayBg;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    ctx.fillStyle = "#f8fafc";
+    ctx.fillStyle = colorOverlayText;
+    ctx.strokeStyle = colorOverlayTextOutline;
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
     if (gameOver.value) {
@@ -432,15 +448,18 @@ function draw(): void {
       const blockStartY = (canvasHeight - blockHeight) / 2;
 
       ctx.font = `800 ${titleFontSize}px Segoe UI`;
-      drawCenteredTextLines(ctx, titleLines, canvasWidth / 2, blockStartY, titleLineHeight);
+      ctx.lineWidth = 6;
+      drawCenteredTextLinesWithOutline(ctx, titleLines, canvasWidth / 2, blockStartY, titleLineHeight, 6);
 
       ctx.font = `600 ${hintFontSize}px Segoe UI`;
-      drawCenteredTextLines(
+      ctx.lineWidth = 3;
+      drawCenteredTextLinesWithOutline(
         ctx,
         hintLines,
         canvasWidth / 2,
         blockStartY + titleLineHeight * titleLines.length + 22,
-        hintLineHeight
+        hintLineHeight,
+        3
       );
     } else {
       ctx.font = "bold 30px Segoe UI";
@@ -453,7 +472,8 @@ function draw(): void {
       const hintLineHeight = hintFontSize * 1.05;
 
       ctx.font = `500 ${hintFontSize}px Segoe UI`;
-      drawCenteredTextLines(ctx, hintLines, canvasWidth / 2, canvasHeight / 2 + 8, hintLineHeight);
+      ctx.lineWidth = 3;
+      drawCenteredTextLinesWithOutline(ctx, hintLines, canvasWidth / 2, canvasHeight / 2 + 8, hintLineHeight, 3);
     }
   }
 }
@@ -542,16 +562,16 @@ onUnmounted(() => {
             <g transform="translate(0 1)">
               <path
                 d="M12 7.4C9.3 4 4.5 4.8 4 10c-.5 5 3 9.7 8 9.7s8.5-4.7 8-9.7c-.5-5.2-5.3-6-8-2.6Z"
-                fill="#ef4444"
+                fill="#ff4d6d"
               />
               <path
                 d="M12 7.3c-.1-2.1.7-3.8 2.2-5"
                 fill="none"
-                stroke="#7c2d12"
+                stroke="#6b3f1d"
                 stroke-width="1.6"
                 stroke-linecap="round"
               />
-              <path d="M12.8 4.4c1.4-1.1 2.9-1.4 4.6-.8-1 1.5-2.6 2.1-4.6.8Z" fill="#22c55e" />
+              <path d="M12.8 4.4c1.4-1.1 2.9-1.4 4.6-.8-1 1.5-2.6 2.1-4.6.8Z" fill="#34d399" />
             </g>
           </svg>
         </div>
@@ -662,8 +682,8 @@ onUnmounted(() => {
   padding: 1.5rem;
   box-sizing: border-box;
   overflow: hidden;
-  background: radial-gradient(circle at top, #111827, #020617 65%);
-  color: #e2e8f0;
+  background: radial-gradient(circle at top, #334155, #0f172a 72%);
+  color: #f8fafc;
 }
 
 .board-area {
@@ -683,6 +703,11 @@ onUnmounted(() => {
   width: 33%;
   flex: 0 0 33%;
   max-width: 33%;
+  padding: 1.1rem 1.2rem;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.62);
+  border: 1px solid #64748b;
+  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.35);
 }
 
 .hud-item {
@@ -713,7 +738,7 @@ onUnmounted(() => {
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: #94a3b8;
+  color: #dbeafe;
 }
 
 .last-direction-content {
@@ -742,7 +767,7 @@ onUnmounted(() => {
   font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  color: #94a3b8;
+  color: #dbeafe;
 }
 
 .hud-icon {
@@ -774,8 +799,8 @@ onUnmounted(() => {
   height: 100%;
   max-width: 100%;
   max-height: 100%;
-  border: 2px solid #334155;
+  border: 3px solid #93c5fd;
   border-radius: 8px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45), 0 0 0 2px rgba(186, 230, 253, 0.22);
 }
 </style>
