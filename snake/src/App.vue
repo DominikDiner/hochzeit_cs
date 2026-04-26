@@ -168,6 +168,148 @@ function drawGrid(ctx: CanvasRenderingContext2D): void {
   }
 }
 
+function getDirectionVector(currentDirection: Direction): Position {
+  if (currentDirection === "up") return { x: 0, y: -1 };
+  if (currentDirection === "down") return { x: 0, y: 1 };
+  if (currentDirection === "left") return { x: -1, y: 0 };
+  return { x: 1, y: 0 };
+}
+
+function getPerpendicularVector(currentDirection: Direction): Position {
+  if (currentDirection === "up") return { x: 1, y: 0 };
+  if (currentDirection === "down") return { x: -1, y: 0 };
+  if (currentDirection === "left") return { x: 0, y: -1 };
+  return { x: 0, y: 1 };
+}
+
+function getSegmentCenter(position: Position): Position {
+  return {
+    x: position.x * tileSize + tileSize / 2,
+    y: position.y * tileSize + tileSize / 2
+  };
+}
+
+function drawSnake(ctx: CanvasRenderingContext2D): void {
+  if (snake.value.length === 0) {
+    return;
+  }
+
+  const segmentCenters = snake.value.map(getSegmentCenter);
+  const firstSegment = segmentCenters[0];
+  const head = segmentCenters[segmentCenters.length - 1];
+
+  if (!firstSegment || !head) {
+    return;
+  }
+
+  const bodyWidth = tileSize - 8;
+  const bodyRadius = bodyWidth / 2;
+
+  ctx.save();
+
+  if (segmentCenters.length === 1) {
+    ctx.fillStyle = "#22c55e";
+    ctx.beginPath();
+    ctx.arc(firstSegment.x, firstSegment.y, bodyRadius, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    ctx.strokeStyle = "#22c55e";
+    ctx.lineWidth = bodyWidth;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(firstSegment.x, firstSegment.y);
+
+    for (let index = 1; index < segmentCenters.length; index += 1) {
+      const segment = segmentCenters[index];
+      if (!segment) continue;
+      ctx.lineTo(segment.x, segment.y);
+    }
+
+    ctx.stroke();
+
+    ctx.strokeStyle = "#4ade80";
+    ctx.lineWidth = bodyWidth * 0.45;
+    ctx.beginPath();
+    ctx.moveTo(firstSegment.x, firstSegment.y);
+
+    for (let index = 1; index < segmentCenters.length; index += 1) {
+      const segment = segmentCenters[index];
+      if (!segment) continue;
+      ctx.lineTo(segment.x, segment.y);
+    }
+
+    ctx.stroke();
+  }
+
+  const headDirection = getDirectionVector(direction.value);
+  const perpendicular = getPerpendicularVector(direction.value);
+  const headRadius = bodyRadius + 2.5;
+  const snoutRadius = headRadius * 0.88;
+  const snoutCenter = {
+    x: head.x + headDirection.x * headRadius * 0.5,
+    y: head.y + headDirection.y * headRadius * 0.5
+  };
+
+  ctx.fillStyle = "#22c55e";
+  ctx.beginPath();
+  ctx.arc(head.x, head.y, headRadius, 0, Math.PI * 2);
+  ctx.arc(snoutCenter.x, snoutCenter.y, snoutRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#86efac";
+  ctx.beginPath();
+  ctx.arc(
+    head.x - headDirection.x * 1.2,
+    head.y - headDirection.y * 1.2,
+    headRadius * 0.72,
+    0,
+    Math.PI * 2
+  );
+  ctx.fill();
+
+  const eyeOffsetForward = headRadius * 0.28;
+  const eyeOffsetSide = headRadius * 0.42;
+  const eyeRadius = Math.max(1.8, tileSize * 0.1);
+  const pupilRadius = eyeRadius * 0.48;
+  const pupilForwardOffset = eyeRadius * 0.32;
+
+  const leftEye = {
+    x: head.x + headDirection.x * eyeOffsetForward + perpendicular.x * eyeOffsetSide,
+    y: head.y + headDirection.y * eyeOffsetForward + perpendicular.y * eyeOffsetSide
+  };
+  const rightEye = {
+    x: head.x + headDirection.x * eyeOffsetForward - perpendicular.x * eyeOffsetSide,
+    y: head.y + headDirection.y * eyeOffsetForward - perpendicular.y * eyeOffsetSide
+  };
+
+  ctx.fillStyle = "#f8fafc";
+  ctx.beginPath();
+  ctx.arc(leftEye.x, leftEye.y, eyeRadius, 0, Math.PI * 2);
+  ctx.arc(rightEye.x, rightEye.y, eyeRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#0f172a";
+  ctx.beginPath();
+  ctx.arc(
+    leftEye.x + headDirection.x * pupilForwardOffset,
+    leftEye.y + headDirection.y * pupilForwardOffset,
+    pupilRadius,
+    0,
+    Math.PI * 2
+  );
+  ctx.arc(
+    rightEye.x + headDirection.x * pupilForwardOffset,
+    rightEye.y + headDirection.y * pupilForwardOffset,
+    pupilRadius,
+    0,
+    Math.PI * 2
+  );
+  ctx.fill();
+
+  ctx.restore();
+}
+
 function syncCanvasResolution(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D): void {
   const dpr = window.devicePixelRatio || 1;
   const displayWidth = Math.max(1, Math.round(canvas.clientWidth));
@@ -201,16 +343,7 @@ function draw(): void {
   ctx.fillStyle = "#f43f5e";
   ctx.fillRect(food.value.x * tileSize, food.value.y * tileSize, tileSize, tileSize);
 
-  ctx.fillStyle = "#22c55e";
-  snake.value.forEach((part, index) => {
-    const inset = index === snake.value.length - 1 ? 2 : 3;
-    ctx.fillRect(
-      part.x * tileSize + inset,
-      part.y * tileSize + inset,
-      tileSize - inset * 2,
-      tileSize - inset * 2
-    );
-  });
+  drawSnake(ctx);
 
   if (gameOver.value || !hasStarted.value) {
     ctx.fillStyle = "rgba(2, 6, 23, 0.72)";
