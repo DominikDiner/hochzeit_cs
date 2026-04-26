@@ -18,6 +18,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: development
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,7 +33,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: snake
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Build
         working-directory: snake
