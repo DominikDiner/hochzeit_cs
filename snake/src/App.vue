@@ -992,7 +992,7 @@ onUnmounted(() => {
   height: 78px;
   border-radius: 12px;
   background: rgba(15, 23, 42, 0.75);
-  border: 2px solid #93c5fd;
+  border: 2px solid #0f172a;
   display: grid;
   place-items: center;
   box-shadow: 0 0 0 2px rgba(186, 230, 253, 0.2);
@@ -1063,7 +1063,7 @@ onUnmounted(() => {
 }
 
 .pixel-portrait {
-  filter: drop-shadow(1.2px 0 0 #0f172a) drop-shadow(-1.2px 0 0 #0f172a) drop-shadow(0 1.2px 0 #0f172a) drop-shadow(0 -1.2px 0 #0f172a) drop-shadow(1.2px 1.2px 0 #0f172a) drop-shadow(-1.2px -1.2px 0 #0f172a) drop-shadow(-1.2px 1.2px 0 #0f172a) drop-shadow(1.2px -1.2px 0 #0f172a);
+  filter: drop-shadow(4px 0 0 #0f172a) drop-shadow(-4px 0 0 #0f172a) drop-shadow(0 4px 0 #0f172a) drop-shadow(0 -4px 0 #0f172a);
 }
 
 .score-apple-icon {
