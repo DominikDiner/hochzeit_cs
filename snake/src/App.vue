@@ -705,9 +705,6 @@ onUnmounted(() => {
   max-width: 33%;
   padding: 1.1rem 1.2rem;
   border-radius: 14px;
-  background: rgba(15, 23, 42, 0.62);
-  border: 1px solid #64748b;
-  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.35);
 }
 
 .hud-item {
@@ -735,7 +732,7 @@ onUnmounted(() => {
 
 .last-direction-label {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: #dbeafe;
@@ -748,15 +745,15 @@ onUnmounted(() => {
 }
 
 .pixel-portrait {
-  width: 86px;
-  height: 108px;
+  width: 172px;
+  height: 216px;
   image-rendering: pixelated;
   shape-rendering: crispEdges;
 }
 
 .last-direction-name {
   margin: 0;
-  font-size: 1.65rem;
+  font-size: 3rem;
   font-weight: 700;
   color: #f8fafc;
 }
