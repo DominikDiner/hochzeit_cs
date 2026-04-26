@@ -594,19 +594,19 @@ function draw(): void {
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
     if (hasWon.value) {
-      const titleLines = ["Super Teamwork!"];
+      const titleLines = ["SUPER", "TEAMWORK"];
       const codeLines = ["Der zweite Teil", "vom Code ist XYZ"];
       const titleMaxWidth = canvasWidth * 0.9;
       const codeMaxWidth = canvasWidth * 0.9;
       const titleFontSize = Math.min(
-        ...titleLines.map((line) => getFittedFontSize(ctx, line, titleMaxWidth, "800", 94, 42))
+        ...titleLines.map((line) => getFittedFontSize(ctx, line, titleMaxWidth, "800", 116, 52))
       );
       const codeFontSize = Math.min(
         ...codeLines.map((line) => getFittedFontSize(ctx, line, codeMaxWidth, "800", 76, 34))
       );
-      const titleLineHeight = titleFontSize * 0.96;
+      const titleLineHeight = titleFontSize * 0.88;
       const codeLineHeight = codeFontSize * 0.96;
-      const spacerHeight = titleLineHeight;
+      const spacerHeight = 22;
       const blockHeight = titleLineHeight * titleLines.length + spacerHeight + codeLineHeight * codeLines.length;
       const blockStartY = (canvasHeight - blockHeight) / 2;
 
