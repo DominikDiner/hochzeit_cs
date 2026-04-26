@@ -954,7 +954,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: max-content 1fr;
   grid-template-areas:
-    ". label"
+    "label ."
     "icon value";
   align-items: center;
   column-gap: 1rem;
@@ -973,9 +973,10 @@ onUnmounted(() => {
   gap: 0.8rem;
 }
 
-.last-direction-label {
+.last-direction-label,
+.score-label {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: #334155;
@@ -1036,11 +1037,6 @@ onUnmounted(() => {
 
 .score-label {
   grid-area: label;
-  margin: 0;
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: #334155;
 }
 
 .hud-icon {
