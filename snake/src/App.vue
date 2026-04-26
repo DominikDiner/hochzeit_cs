@@ -44,8 +44,8 @@ const colorBoardBg = "#e2e8f0";
 const colorGrid = "#94a3b8";
 const colorSnakeBody = "#16a34a";
 const colorSnakeHighlight = "#86efac";
-const colorFoodBody = "#ff4d6d";
-const colorFoodOutline = "#be123c";
+const colorFoodBody = "#bf0b2e";
+const colorFoodOutline = "#7c0b26";
 const colorFoodStem = "#6b3f1d";
 const colorFoodLeaf = "#34d399";
 const colorOverlayBg = "rgba(248, 250, 252, 0.84)";
@@ -784,8 +784,8 @@ onUnmounted(() => {
             <g transform="translate(0 1)">
               <path
                 d="M12 7.4C9.3 4 4.5 4.8 4 10c-.5 5 3 9.7 8 9.7s8.5-4.7 8-9.7c-.5-5.2-5.3-6-8-2.6Z"
-                fill="#ff4d6d"
-                stroke="#be123c"
+                fill="#bf0b2e"
+                stroke="#7c0b26"
                 stroke-width="1.2"
                 stroke-linejoin="round"
               />
