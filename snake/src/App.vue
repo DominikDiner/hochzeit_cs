@@ -365,7 +365,7 @@ function drawGrid(ctx: CanvasRenderingContext2D): void {
 function drawFood(ctx: CanvasRenderingContext2D, position: Position): void {
   const baseX = position.x * tileSize;
   const baseY = position.y * tileSize;
-  const appleSize = (tileSize - 2) * 1.5;
+  const appleSize = (tileSize - 2) * 1.35;
   const offset = (tileSize - appleSize) / 2;
   const scale = appleSize / heartViewBoxSize;
 
