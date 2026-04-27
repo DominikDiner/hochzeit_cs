@@ -790,24 +790,24 @@ onUnmounted(() => {
         <p class="score-label">Verloren</p>
 
         <div class="hud-icon" aria-hidden="true">
-          <svg class="label-icon loss-skull-icon" viewBox="0 0 24 24">
+          <svg class="label-icon loss-plate-icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="8" fill="#ffffff" stroke="#0f172a" stroke-width="1.2" />
+            <circle cx="12" cy="12" r="5.2" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9" />
             <path
-              d="M12 5.2c-3.4 0-5.9 2.4-5.9 5.5 0 2.1 1.1 3.9 2.9 4.9V18c0 .9.7 1.6 1.6 1.6h2.8c.9 0 1.6-.7 1.6-1.6v-2.4c1.8-1 2.9-2.8 2.9-4.9 0-3.1-2.5-5.5-5.9-5.5Z"
-              fill="#f8fafc"
+              d="M12 4 10.8 7.4 12.7 10.7 11.1 13.7 13 16.9 11.8 20"
+              fill="none"
               stroke="#0f172a"
-              stroke-width="1"
+              stroke-width="0.95"
+              stroke-linecap="round"
               stroke-linejoin="round"
             />
-            <ellipse cx="9.7" cy="10.4" rx="1.4" ry="1.7" fill="#0f172a" />
-            <ellipse cx="14.3" cy="10.4" rx="1.4" ry="1.7" fill="#0f172a" />
-            <path d="M12 12.1 10.9 14h2.2L12 12.1Z" fill="#0f172a" />
-            <rect x="9.4" y="15.2" width="5.2" height="2" rx="0.6" fill="#e2e8f0" />
             <path
-              d="M11.1 15.4v1.6M12.9 15.4v1.6"
+              d="M12.7 10.8 15.9 9.4 14.1 12.4 17.2 13.7 19.9 12.1"
               fill="none"
-              stroke="#94a3b8"
-              stroke-width="0.7"
+              stroke="#0f172a"
+              stroke-width="0.95"
               stroke-linecap="round"
+              stroke-linejoin="round"
             />
           </svg>
         </div>
