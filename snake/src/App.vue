@@ -36,18 +36,15 @@ const musicState = ref<MusicState>("idle");
 
 const canvasWidth = columns * tileSize;
 const canvasHeight = rows * tileSize;
-const appleViewBoxSize = 24;
-const appleBodyPathData = "M12 7.4C9.3 4 4.5 4.8 4 10c-.5 5 3 9.7 8 9.7s8.5-4.7 8-9.7c-.5-5.2-5.3-6-8-2.6Z";
-const appleStemPathData = "M12 7.3c-.1-2.1.7-3.8 2.2-5";
-const appleLeafPathData = "M12.8 4.4c1.4-1.1 2.9-1.4 4.6-.8-1 1.5-2.6 2.1-4.6.8Z";
+const heartViewBoxSize = 24;
+const heartPathData =
+  "M12 21.35 10.55 20.03C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3 9.24 3 10.91 3.81 12 5.09 13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5 22 12.28 18.6 15.36 13.45 20.04L12 21.35Z";
 const colorBoardBg = "#e2e8f0";
 const colorGrid = "#94a3b8";
 const colorSnakeBody = "#16a34a";
 const colorSnakeHighlight = "#86efac";
 const colorFoodBody = "#bf0b2e";
 const colorFoodOutline = "#7c0b26";
-const colorFoodStem = "#6b3f1d";
-const colorFoodLeaf = "#34d399";
 const colorOverlayBg = "rgba(248, 250, 252, 0.84)";
 const colorOverlayText = "#0f172a";
 const colorOverlayTextOutline = "#cbd5e1";
@@ -351,31 +348,21 @@ function drawFood(ctx: CanvasRenderingContext2D, position: Position): void {
   const baseY = position.y * tileSize;
   const appleSize = (tileSize - 2) * 1.5;
   const offset = (tileSize - appleSize) / 2;
-  const scale = appleSize / appleViewBoxSize;
+  const scale = appleSize / heartViewBoxSize;
 
-  const appleBodyPath = new Path2D(appleBodyPathData);
-  const appleStemPath = new Path2D(appleStemPathData);
-  const appleLeafPath = new Path2D(appleLeafPathData);
+  const heartPath = new Path2D(heartPathData);
 
   ctx.save();
   ctx.translate(baseX + offset, baseY + offset);
   ctx.scale(scale, scale);
 
   ctx.fillStyle = colorFoodBody;
-  ctx.fill(appleBodyPath);
+  ctx.fill(heartPath);
 
   ctx.strokeStyle = colorFoodOutline;
   ctx.lineWidth = 1.5;
   ctx.lineJoin = "round";
-  ctx.stroke(appleBodyPath);
-
-  ctx.strokeStyle = colorFoodStem;
-  ctx.lineWidth = 1.6;
-  ctx.lineCap = "round";
-  ctx.stroke(appleStemPath);
-
-  ctx.fillStyle = colorFoodLeaf;
-  ctx.fill(appleLeafPath);
+  ctx.stroke(heartPath);
 
   ctx.restore();
 }
@@ -780,23 +767,15 @@ onUnmounted(() => {
         <p class="score-label">Score</p>
 
         <div class="hud-icon" aria-hidden="true">
-          <svg class="label-icon score-apple-icon" viewBox="0 0 24 24">
-            <g transform="translate(0 1)">
+          <svg class="label-icon score-heart-icon" viewBox="0 0 24 24">
+            <g transform="translate(12 12) scale(0.8) translate(-12 -12)">
               <path
-                d="M12 7.4C9.3 4 4.5 4.8 4 10c-.5 5 3 9.7 8 9.7s8.5-4.7 8-9.7c-.5-5.2-5.3-6-8-2.6Z"
+                d="M12 21.35 10.55 20.03C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3 9.24 3 10.91 3.81 12 5.09 13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5 22 12.28 18.6 15.36 13.45 20.04L12 21.35Z"
                 fill="#bf0b2e"
                 stroke="#7c0b26"
                 stroke-width="1.2"
                 stroke-linejoin="round"
               />
-              <path
-                d="M12 7.3c-.1-2.1.7-3.8 2.2-5"
-                fill="none"
-                stroke="#6b3f1d"
-                stroke-width="1.6"
-                stroke-linecap="round"
-              />
-              <path d="M12.8 4.4c1.4-1.1 2.9-1.4 4.6-.8-1 1.5-2.6 2.1-4.6.8Z" fill="#34d399" />
             </g>
           </svg>
         </div>
@@ -1062,7 +1041,7 @@ onUnmounted(() => {
   filter: drop-shadow(4px 0 0 #22273e) drop-shadow(-4px 0 0 #22273e) drop-shadow(0 4px 0 #22273e) drop-shadow(0 -4px 0 #22273e);
 }
 
-.score-apple-icon {
+.score-heart-icon {
   filter: none;
 }
 
