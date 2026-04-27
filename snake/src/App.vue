@@ -635,7 +635,7 @@ function draw(): void {
       );
     } else if (gameOver.value) {
       const titleLines = ["GAME", "OVER"];
-      const hintLines = ["Drücke eine Pfeiltaste", "zum Starten"];
+      const hintLines = ["Drücke Pfeiltaste", "oder WASD zum Starten"];
       const titleMaxWidth = canvasWidth * 0.9;
       const hintMaxWidth = canvasWidth * 0.84;
       const titleFontSize = Math.min(
@@ -666,7 +666,7 @@ function draw(): void {
     } else {
       ctx.font = "bold 30px Segoe UI";
 
-      const hintLines = ["Drücke eine Pfeiltaste", "zum Starten"];
+      const hintLines = ["Drücke Pfeiltaste", "oder WASD zum Starten"];
       const hintMaxWidth = canvasWidth * 0.84;
       const hintFontSize = Math.min(
         ...hintLines.map((line) => getFittedFontSize(ctx, line, hintMaxWidth, "600", 28, 18))
@@ -701,15 +701,23 @@ function onKeyDown(event: KeyboardEvent): void {
 
   switch (event.key) {
     case "ArrowUp":
+    case "w":
+    case "W":
       nextDirection = "up";
       break;
     case "ArrowDown":
+    case "s":
+    case "S":
       nextDirection = "down";
       break;
     case "ArrowLeft":
+    case "a":
+    case "A":
       nextDirection = "left";
       break;
     case "ArrowRight":
+    case "d":
+    case "D":
       nextDirection = "right";
       break;
   }
