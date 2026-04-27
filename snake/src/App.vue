@@ -33,6 +33,8 @@ const masterGainRef = ref<GainNode | null>(null);
 const musicIntervalId = ref<number | null>(null);
 const musicStep = ref(0);
 const musicState = ref<MusicState>("idle");
+const boatSailColorBySegment = ref<string[]>([]);
+const nextBoatColorIndex = ref(0);
 
 const canvasWidth = columns * tileSize;
 const canvasHeight = rows * tileSize;
@@ -41,8 +43,12 @@ const heartPathData =
   "M12 21.35 10.55 20.03C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3 9.24 3 10.91 3.81 12 5.09 13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5 22 12.28 18.6 15.36 13.45 20.04L12 21.35Z";
 const colorBoardBg = "#e2e8f0";
 const colorGrid = "#94a3b8";
-const colorSnakeBody = "#16a34a";
-const colorSnakeHighlight = "#86efac";
+const colorBoatHull = "#8b5a2b";
+const colorBoatHullShadow = "#6f451f";
+const colorBoatDeck = "#d6b58a";
+const colorBoatSail = "#ffffff";
+const colorBoatOutline = "#2b1a0e";
+const boatSailColors = ["#dc2626", "#2563eb", "#16a34a", "#f59e0b", "#7c3aed"];
 const colorFoodBody = "#bf0b2e";
 const colorFoodOutline = "#7c0b26";
 const colorOverlayBg = "rgba(248, 250, 252, 0.84)";
@@ -192,6 +198,16 @@ function randomInt(maxExclusive: number): number {
   return Math.floor(Math.random() * maxExclusive);
 }
 
+function getNextBoatSailColor(): string {
+  if (boatSailColors.length === 0) {
+    return colorBoatSail;
+  }
+
+  const color = boatSailColors[nextBoatColorIndex.value % boatSailColors.length] ?? colorBoatSail;
+  nextBoatColorIndex.value += 1;
+  return color;
+}
+
 function isOpposite(next: Direction, current: Direction): boolean {
   return (
     (next === "up" && current === "down") ||
@@ -233,6 +249,8 @@ function resetGame(): void {
     { x: centerX, y: centerY },
     { x: centerX + 1, y: centerY }
   ];
+  nextBoatColorIndex.value = 0;
+  boatSailColorBySegment.value = snake.value.map(() => getNextBoatSailColor());
   direction.value = "right";
   pendingDirection.value = "right";
   score.value = 0;
@@ -303,6 +321,7 @@ function tick(): void {
     playEatSound();
     score.value += 1;
     snake.value = nextSnake;
+    boatSailColorBySegment.value = [...boatSailColorBySegment.value, getNextBoatSailColor()];
 
     if (score.value >= winScore) {
       hasWon.value = true;
@@ -374,18 +393,106 @@ function getDirectionVector(currentDirection: Direction): Position {
   return { x: 1, y: 0 };
 }
 
-function getPerpendicularVector(currentDirection: Direction): Position {
-  if (currentDirection === "up") return { x: 1, y: 0 };
-  if (currentDirection === "down") return { x: -1, y: 0 };
-  if (currentDirection === "left") return { x: 0, y: -1 };
-  return { x: 0, y: 1 };
-}
-
 function getSegmentCenter(position: Position): Position {
   return {
     x: position.x * tileSize + tileSize / 2,
     y: position.y * tileSize + tileSize / 2
   };
+}
+
+function getSegmentDirection(index: number, segments: Position[]): Position {
+  const current = segments[index];
+  if (!current) {
+    return getDirectionVector(direction.value);
+  }
+
+  const next = segments[index + 1];
+  if (next) {
+    return {
+      x: Math.sign(next.x - current.x),
+      y: Math.sign(next.y - current.y)
+    };
+  }
+
+  const previous = segments[index - 1];
+  if (previous) {
+    return {
+      x: Math.sign(current.x - previous.x),
+      y: Math.sign(current.y - previous.y)
+    };
+  }
+
+  return getDirectionVector(direction.value);
+}
+
+function drawBoatSegment(
+  ctx: CanvasRenderingContext2D,
+  center: Position,
+  segmentDirection: Position,
+  sailColor: string
+): void {
+  const directionX = segmentDirection.x === 0 && segmentDirection.y === 0 ? 0 : segmentDirection.x;
+  const directionY = segmentDirection.x === 0 && segmentDirection.y === 0 ? -1 : segmentDirection.y;
+  const angle = Math.atan2(directionY, directionX) + Math.PI / 2;
+
+  const scale = 1.05;
+  const hullLength = tileSize * 0.72;
+  const hullWidth = tileSize * 0.42;
+
+  ctx.save();
+  ctx.translate(center.x, center.y);
+  ctx.rotate(angle);
+  ctx.scale(scale, scale);
+
+  ctx.fillStyle = "rgba(15, 23, 42, 0.14)";
+  ctx.beginPath();
+  ctx.ellipse(0, hullLength * 0.48, hullWidth * 0.5, hullWidth * 0.2, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = colorBoatHull;
+  ctx.strokeStyle = colorBoatOutline;
+  ctx.lineWidth = 1.1;
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  ctx.moveTo(0, -hullLength * 0.56);
+  ctx.quadraticCurveTo(hullWidth * 0.58, -hullLength * 0.1, hullWidth * 0.42, hullLength * 0.5);
+  ctx.lineTo(-hullWidth * 0.42, hullLength * 0.5);
+  ctx.quadraticCurveTo(-hullWidth * 0.58, -hullLength * 0.1, 0, -hullLength * 0.56);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = colorBoatHullShadow;
+  ctx.beginPath();
+  ctx.moveTo(0, -hullLength * 0.42);
+  ctx.quadraticCurveTo(hullWidth * 0.34, -hullLength * 0.06, hullWidth * 0.26, hullLength * 0.34);
+  ctx.lineTo(-hullWidth * 0.26, hullLength * 0.34);
+  ctx.quadraticCurveTo(-hullWidth * 0.34, -hullLength * 0.06, 0, -hullLength * 0.42);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = colorBoatDeck;
+  ctx.beginPath();
+  ctx.roundRect(-hullWidth * 0.18, hullLength * 0.02, hullWidth * 0.36, hullLength * 0.22, hullWidth * 0.08);
+  ctx.fill();
+
+  ctx.strokeStyle = colorBoatOutline;
+  ctx.lineWidth = 0.9;
+  ctx.beginPath();
+  ctx.moveTo(0, hullLength * 0.16);
+  ctx.lineTo(0, -hullLength * 0.28);
+  ctx.stroke();
+
+  ctx.fillStyle = sailColor;
+  ctx.beginPath();
+  ctx.moveTo(0, -hullLength * 0.26);
+  ctx.lineTo(hullWidth * 0.44, -hullLength * 0.02);
+  ctx.lineTo(0, -hullLength * 0.02);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.restore();
 }
 
 function drawSnake(ctx: CanvasRenderingContext2D): void {
@@ -394,119 +501,11 @@ function drawSnake(ctx: CanvasRenderingContext2D): void {
   }
 
   const segmentCenters = snake.value.map(getSegmentCenter);
-  const firstSegment = segmentCenters[0];
-  const head = segmentCenters[segmentCenters.length - 1];
-
-  if (!firstSegment || !head) {
-    return;
-  }
-
-  const bodyWidth = tileSize - 8;
-  const bodyRadius = bodyWidth / 2;
-
-  ctx.save();
-
-  if (segmentCenters.length === 1) {
-    ctx.fillStyle = colorSnakeBody;
-    ctx.beginPath();
-    ctx.arc(firstSegment.x, firstSegment.y, bodyRadius, 0, Math.PI * 2);
-    ctx.fill();
-  } else {
-    ctx.strokeStyle = colorSnakeBody;
-    ctx.lineWidth = bodyWidth;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.beginPath();
-    ctx.moveTo(firstSegment.x, firstSegment.y);
-
-    for (let index = 1; index < segmentCenters.length; index += 1) {
-      const segment = segmentCenters[index];
-      if (!segment) continue;
-      ctx.lineTo(segment.x, segment.y);
-    }
-
-    ctx.stroke();
-
-    ctx.strokeStyle = colorSnakeHighlight;
-    ctx.lineWidth = bodyWidth * 0.45;
-    ctx.beginPath();
-    ctx.moveTo(firstSegment.x, firstSegment.y);
-
-    for (let index = 1; index < segmentCenters.length; index += 1) {
-      const segment = segmentCenters[index];
-      if (!segment) continue;
-      ctx.lineTo(segment.x, segment.y);
-    }
-
-    ctx.stroke();
-  }
-
-  const headDirection = getDirectionVector(direction.value);
-  const perpendicular = getPerpendicularVector(direction.value);
-  const headRadius = bodyRadius + 2.5;
-  const snoutRadius = headRadius * 0.88;
-  const snoutCenter = {
-    x: head.x + headDirection.x * headRadius * 0.5,
-    y: head.y + headDirection.y * headRadius * 0.5
-  };
-
-  ctx.fillStyle = colorSnakeBody;
-  ctx.beginPath();
-  ctx.arc(head.x, head.y, headRadius, 0, Math.PI * 2);
-  ctx.arc(snoutCenter.x, snoutCenter.y, snoutRadius, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = colorSnakeHighlight;
-  ctx.beginPath();
-  ctx.arc(
-    head.x - headDirection.x * 1.2,
-    head.y - headDirection.y * 1.2,
-    headRadius * 0.72,
-    0,
-    Math.PI * 2
-  );
-  ctx.fill();
-
-  const eyeOffsetForward = headRadius * 0.28;
-  const eyeOffsetSide = headRadius * 0.42;
-  const eyeRadius = Math.max(1.8, tileSize * 0.1);
-  const pupilRadius = eyeRadius * 0.48;
-  const pupilForwardOffset = eyeRadius * 0.32;
-
-  const leftEye = {
-    x: head.x + headDirection.x * eyeOffsetForward + perpendicular.x * eyeOffsetSide,
-    y: head.y + headDirection.y * eyeOffsetForward + perpendicular.y * eyeOffsetSide
-  };
-  const rightEye = {
-    x: head.x + headDirection.x * eyeOffsetForward - perpendicular.x * eyeOffsetSide,
-    y: head.y + headDirection.y * eyeOffsetForward - perpendicular.y * eyeOffsetSide
-  };
-
-  ctx.fillStyle = "#f8fafc";
-  ctx.beginPath();
-  ctx.arc(leftEye.x, leftEye.y, eyeRadius, 0, Math.PI * 2);
-  ctx.arc(rightEye.x, rightEye.y, eyeRadius, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "#0f172a";
-  ctx.beginPath();
-  ctx.arc(
-    leftEye.x + headDirection.x * pupilForwardOffset,
-    leftEye.y + headDirection.y * pupilForwardOffset,
-    pupilRadius,
-    0,
-    Math.PI * 2
-  );
-  ctx.arc(
-    rightEye.x + headDirection.x * pupilForwardOffset,
-    rightEye.y + headDirection.y * pupilForwardOffset,
-    pupilRadius,
-    0,
-    Math.PI * 2
-  );
-  ctx.fill();
-
-  ctx.restore();
+  segmentCenters.forEach((segmentCenter, index) => {
+    const segmentDirection = getSegmentDirection(index, snake.value);
+    const sailColor = boatSailColorBySegment.value[index] ?? colorBoatSail;
+    drawBoatSegment(ctx, segmentCenter, segmentDirection, sailColor);
+  });
 }
 
 function getFittedFontSize(
