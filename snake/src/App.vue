@@ -1,18 +1,30 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 
 type Direction = "up" | "down" | "left" | "right"
 type MusicState = "idle" | "playing" | "lose" | "win"
+type GameSpeed = "slow" | "normal" | "fast"
 
 interface Position {
   x: number;
   y: number;
 }
 
+interface SpeedOption {
+  value: GameSpeed;
+  label: string;
+  tickMs: number;
+}
+
 const tileSize = 24;
 const columns = 15;
 const rows = 15;
 const tickMs = 130;
+const speedOptions: SpeedOption[] = [
+  { value: "slow", label: "Langsam", tickMs: 220 },
+  { value: "normal", label: "Normal", tickMs },
+  { value: "fast", label: "Schnell", tickMs: 85 }
+];
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const score = ref(0);
@@ -35,6 +47,8 @@ const musicStep = ref(0);
 const musicState = ref<MusicState>("idle");
 const boatSailColorBySegment = ref<string[]>([]);
 const nextBoatColorIndex = ref(0);
+const selectedSpeed = ref<GameSpeed>("normal");
+const isSettingsOpen = ref(false);
 
 const canvasWidth = columns * tileSize;
 const canvasHeight = rows * tileSize;
@@ -58,6 +72,9 @@ const musicNotes = [261.63, 329.63, 392.0, 349.23, 329.63, 293.66, 329.63, 392.0
 const loseMusicNotes = [293.66, 261.63, 220.0, 196.0, 174.61, 196.0];
 const winMusicNotes = [523.25, 659.25, 783.99, 1046.5, 783.99, 1318.51, 1046.5, 783.99];
 const winScore = 20;
+const currentTickMs = computed(() => {
+  return speedOptions.find((option) => option.value === selectedSpeed.value)?.tickMs ?? tickMs;
+});
 
 function initAudio(): void {
   if (audioContextRef.value && masterGainRef.value) {
@@ -280,7 +297,7 @@ function startLoop(): void {
   stopLoop();
   intervalId.value = window.setInterval(() => {
     tick();
-  }, tickMs);
+  }, currentTickMs.value);
 }
 
 function tick(): void {
@@ -670,6 +687,16 @@ function onResize(): void {
 }
 
 function onKeyDown(event: KeyboardEvent): void {
+  if (event.key === "Escape" && isSettingsOpen.value) {
+    closeSettingsDialog();
+    event.preventDefault();
+    return;
+  }
+
+  if (isSettingsOpen.value) {
+    return;
+  }
+
   let nextDirection: Direction | null = null;
 
   switch (event.key) {
@@ -727,6 +754,27 @@ function onKeyDown(event: KeyboardEvent): void {
   pendingDirection.value = nextDirection;
 }
 
+function toggleSettingsDialog(): void {
+  isSettingsOpen.value = !isSettingsOpen.value;
+}
+
+function closeSettingsDialog(): void {
+  isSettingsOpen.value = false;
+}
+
+function setGameSpeed(nextSpeed: GameSpeed): void {
+  if (selectedSpeed.value === nextSpeed) {
+    return;
+  }
+
+  selectedSpeed.value = nextSpeed;
+
+  // Laufende Runde direkt mit neuer Tick-Rate fortsetzen.
+  if (hasStarted.value && !gameOver.value && !hasWon.value) {
+    startLoop();
+  }
+}
+
 onMounted(() => {
   resetGame();
   window.addEventListener("keydown", onKeyDown);
@@ -750,6 +798,58 @@ onUnmounted(() => {
 
 <template>
   <main class="app">
+    <button
+      class="settings-trigger"
+      type="button"
+      aria-label="Einstellungen oeffnen"
+      title="Einstellungen"
+      @click="toggleSettingsDialog"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M10.6 2h2.8l.5 2.1c.6.2 1.2.5 1.8.9l2-.8 2 2-1 2c.4.6.7 1.2.9 1.8l2.1.5v2.8l-2.1.5c-.2.6-.5 1.2-.9 1.8l1 2-2 2-2-.8c-.6.4-1.2.7-1.8.9l-.5 2.1h-2.8l-.5-2.1c-.6-.2-1.2-.5-1.8-.9l-2 .8-2-2 1-2c.4-.6.7-1.2.9-1.8L2 13.4v-2.8l2.1-.5c.2-.6.5-1.2.9-1.8l-1-2 2-2 2 .8c.6-.4 1.2-.7 1.8-.9L10.6 2Zm1.4 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"
+          fill="currentColor"
+        />
+      </svg>
+    </button>
+
+    <div v-if="isSettingsOpen" class="settings-overlay" @click="closeSettingsDialog">
+      <section
+        class="settings-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-title"
+        @click.stop
+      >
+        <div class="settings-header">
+          <h2 id="settings-title">Einstellungen</h2>
+          <button class="settings-close" type="button" aria-label="Dialog schliessen" @click="closeSettingsDialog">
+            ✕
+          </button>
+        </div>
+
+        <p class="settings-subtitle">Geschwindigkeit</p>
+
+        <div class="speed-options">
+          <label
+            v-for="option in speedOptions"
+            :key="option.value"
+            class="speed-option"
+            :class="{ active: selectedSpeed === option.value }"
+          >
+            <input
+              type="radio"
+              name="game-speed"
+              :value="option.value"
+              :checked="selectedSpeed === option.value"
+              @change="setGameSpeed(option.value)"
+            >
+            <span>{{ option.label }}</span>
+          </label>
+        </div>
+      </section>
+    </div>
+
     <div class="board-area">
       <canvas
         ref="canvasRef"
@@ -904,6 +1004,112 @@ onUnmounted(() => {
   box-sizing: border-box;
   overflow: hidden;
   background: radial-gradient(circle at top, #f8fafc, #dbeafe 72%);
+  color: #0f172a;
+  position: relative;
+}
+
+.settings-trigger {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  border: 2px solid #0f172a;
+  background: rgba(248, 250, 252, 0.88);
+  color: #0f172a;
+  cursor: pointer;
+  z-index: 25;
+}
+
+.settings-trigger:hover {
+  background: #f8fafc;
+}
+
+.settings-trigger svg {
+  width: 27px;
+  height: 27px;
+}
+
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.36);
+  display: grid;
+  place-items: center;
+  z-index: 40;
+}
+
+.settings-dialog {
+  width: min(360px, calc(100vw - 2rem));
+  background: #f8fafc;
+  border: 2px solid #0f172a;
+  border-radius: 14px;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.22);
+  padding: 1rem 1rem 1.1rem;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.settings-header h2 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.settings-close {
+  border: 1px solid #64748b;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
+.settings-subtitle {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.speed-options {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.speed-option {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border: 2px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.6rem 0.7rem;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.speed-option.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.speed-option input {
+  accent-color: #2563eb;
+}
+
+.speed-option span {
+  font-size: 1rem;
+  font-weight: 600;
   color: #0f172a;
 }
 
